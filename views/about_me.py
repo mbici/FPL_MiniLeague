@@ -1,45 +1,63 @@
 import streamlit as st
-
-from forms.contact import contact_form
-
-
-@st.dialog("Contact Me")
-def show_contact_form():
-    contact_form()
+from Utils.league import *
 
 
-# --- HERO SECTION ---
-col1, col2 = st.columns(2, gap="small", vertical_alignment="center")
+st.markdown(f'<h1 style="color:#33ff33;font-size:60px;background-image:linear-gradient(45deg, #1A512E, #63A91F);"'
+            f'>FPL Mini-League Details App</h1>', unsafe_allow_html=True)
+st.write('\n')
+
+st.html(
+    '''
+    <style>
+    hr {
+        border-color: yellow;
+    }
+    </style>
+    '''
+)
+
+st.markdown("""
+<style>
+.big-font {
+    font-size:20px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.divider()
+
+_help = st.container(border=True)
+_mgrDetails = st.container(border=True)
+
+with _help:
+    st.write('How to Use:')
+    st.caption('Click on on the League Statistics menu option to get all statistics for Fantasy Kings - 2024/25')
+    st.caption('Click on on the League Statistics menu option to get all managerial statistics from Fantasy Kings - 2024/25')
+
+lg = league(140708)
+lg_name = lg.get_league_name()
+
+with _mgrDetails:
+    st.write('\n')
+    st.subheader(lg_name, anchor=False)
+
+    st.markdown('<p class="big-font">Manager Details</p>', unsafe_allow_html=True)
+
+    df = st.dataframe(lg.get_league_players(), hide_index=True, use_container_width=True, column_config={'Id': None},
+                      column_order=['Player', 'Team'])
+
+st.divider()
+
+st.write('Support')
+col1, col2 = st.columns([0.3, 4], gap="small", vertical_alignment="center")
 with col1:
-    st.image("./assets/profile_image.png", width=230)
+    st.image("./assets/profile_image.png", width=80)
 
 with col2:
-    st.title("Himanshu Masani", anchor=False)
-    st.write(
-        "FPL Admin for Fantasy Kings 2024-25"
-    )
+    st.caption("Himanshu Masani")
+    st.caption('FPL Admin for Fantasy Kings 2024-25')
     if st.button("✉️ Contact Me"):
-        show_contact_form()
-
-
-# --- EXPERIENCE & QUALIFICATIONS ---
-st.write("\n")
-st.subheader("Experience & Qualifications", anchor=False)
-st.write(
-    """
-    - Over 10 years of experience playing FPL
-    - Good analytical skills with regards to player selection
-    - Runners Up in last season's Fantasy Kings mini-league
-    """
-)
-
-# --- SKILLS ---
-st.write("\n")
-st.subheader("Hard Skills", anchor=False)
-st.write(
-    """
-    - Programming: Python, SQL, AWS
-    - Data Visualization: PowerBi, Tableau, Plotly
-    - Databases: Postgres, MongoDB, MySQL
-    """
-)
+        st.warning('''
+                - Phone : xxxxx
+                - Email : test@test.com
+                ''')

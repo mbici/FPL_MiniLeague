@@ -53,8 +53,8 @@ class league:
         players = []
 
         try:
-            players = [{'id': player['entry'], 'team': player['entry_name'],
-                        'player': player['player_first_name'].capitalize() + ' ' + player[
+            players = [{'Id': player['entry'], 'Team': player['entry_name'],
+                        'Player': player['player_first_name'].capitalize() + ' ' + player[
                             'player_last_name'].capitalize()}
                        for player in data['new_entries']['results']]
             logging.info('Total Players in the league -> ' + str(len(players)))
@@ -89,7 +89,8 @@ if __name__ == '__main__':
     print(t.get_league_name())
     print('------------------------------------------------')
     p_df = pd.DataFrame.from_records(t.get_league_players())
-    p_df.rename(columns={'id': 'Player Id', 'team': 'Team Name', 'player': 'Player Name'}, inplace=True)
-    print(p_df)  # p_df.to_string(index=False)
+    print(t.get_league_players())
+    p_df.rename(columns={'id': 'Player Id', 'team': 'Team Name', 'player': 'Player Name'})
+    print(p_df.get('Player'))  # p_df.to_string(index=False)
     print('------------------------------------------------')
     print(t.get_league_standings())

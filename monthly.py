@@ -1,7 +1,5 @@
-import csv
-import league
-from league import *
-from gameweek import *
+from Utils.league import *
+from Utils.gameweek import *
 from phases import *
 import requests
 import pandas as pd

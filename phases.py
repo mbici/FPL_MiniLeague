@@ -1,7 +1,6 @@
-from datetime import datetime
 import requests
 import json
-from gameweek import get_recent_completed_gameweek
+from Utils.gameweek import get_recent_completed_gameweek
 
 
 def get_phases():

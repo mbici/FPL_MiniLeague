@@ -1,10 +1,5 @@
-import requests
-import json
 import csv
-import Params as p
-from league import *
-import gameweek as gw
-import wanotification as w
+from Utils import gameweek as gw
 from monthly import *
 import os
 from overall import *

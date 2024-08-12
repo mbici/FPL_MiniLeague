@@ -1,28 +1,23 @@
 import streamlit as st
 
-
+st.set_page_config(layout="wide")
 # --- PAGE SETUP ---
 about_page = st.Page(
-    "views/about_me.py",
-    title="About Me",
-    icon=":material/account_circle:",
+    'views/about_me.py',
+    title='Get Started',
+    icon=':material/info:',
     default=True,
 )
-player = st.Page(
-    "views/player.py",
-    title="Player Details",
-    icon=":material/bar_chart:",
+league = st.Page(
+    'views/minileague.py',
+    title='League Statistics',
+    icon=':material/emoji_events:',
 )
-# project_1_page = st.Page(
-#     "views/sales_dashboard.py",
-#     title="Sales Dashboard",
-#     icon=":material/bar_chart:",
-# )
-# project_2_page = st.Page(
-#     "views/chatbot.py",
-#     title="Chat Bot",
-#     icon=":material/smart_toy:",
-# )
+analytics = st.Page(
+    'views/analytics.py',
+    title='Manager Statistics',
+    icon=':material/analytics:'
+)
 
 
 # --- NAVIGATION SETUP [WITHOUT SECTIONS] ---
@@ -31,16 +26,14 @@ player = st.Page(
 # --- NAVIGATION SETUP [WITH SECTIONS]---
 pg = st.navigation(
     {
-        "Info": [about_page],
-        "Projects": [player],
+        "Welcome": [about_page],
+        "Menu": [league, analytics],
     }
 )
 
 
 # --- SHARED ON ALL PAGES ---
-st.logo("assets/codingisfun_logo.png")
-st.sidebar.markdown("Made with ❤️ by Himanshu")
-
+st.logo("assets/fpl.png")
 
 # --- RUN NAVIGATION ---
 pg.run()

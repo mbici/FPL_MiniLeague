@@ -1,20 +1,27 @@
-from league import *
+from Utils.league import *
 from Params import params as p
-from datetime import datetime, timedelta
 import requests
 import pandas as pd
 
 logging.basicConfig(level=logging.WARNING)
 
 
-def plyr_hist(pl=None):
+def plyr_hist(pl=None, plyrLink=None):
     try:
-        session = requests.session()
-        data = session.get(f'{p.base_url}entry/{pl}/history/').json()
+        df = pd.DataFrame(columns=['Season', 'Rank', 'PlayerId', 'Player Name'])
+        for i in pl:
+            session = requests.session()
+            data = session.get(f'{p.base_url}entry/{i}/history/').json()
 
-        hist = [{'Season':x['season_name'], 'Rank':x['rank']} for x in data['past']]
-        df = pd.DataFrame(hist)
-        logging.info('API access successful!!')
+            hist = [{'Season': x['season_name'], 'Rank': x['rank'], 'PlayerId': i} for x in data['past']]
+            df1 = pd.DataFrame(hist)
+            for j in plyrLink:
+                for k, v in j.items():
+                    if v == i:
+                        df1['Player Name'] = k
+                        break
+            df = pd.concat([df, df1])
+            logging.info('API access successful!!')
 
     except Exception as e:
         print('No player id provided')
@@ -24,4 +31,4 @@ def plyr_hist(pl=None):
 
 
 if __name__ == '__main__':
-    print(plyr_hist(777321))
+    print(plyr_hist([777321,1631933]))
