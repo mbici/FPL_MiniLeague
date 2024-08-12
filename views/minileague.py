@@ -77,7 +77,8 @@ with _wk_mnth:
     gwr, mnr = st.columns(2)
     with gwr:
         st.subheader('Gameweek Ranking', anchor=False)
-        option = st.selectbox('Select Gameweek:', tuple(range(1, 38)), index=0)
+        #option = st.selectbox('Select Gameweek:', tuple(range(1, 38)), index=0)
+        option = st.slider("Select Gameweek", 1, 38, 1)
         gw_data_option = gw_data.loc[gw_data['Gameweek'] == option].sort_values(by=['Rank'])
         gw_data_option = gw_data_option.style.apply(highlight_ranker, axis=1).apply(top_row, axis=1)
         # gw_data_option.iloc[0, 2] = '🏆'
@@ -90,10 +91,13 @@ with _wk_mnth:
 
     with mnr:
         st.subheader('Monthly Ranking', anchor=False)
-        option = st.selectbox('Select Month:', ('August', 'September', 'October', 'November', 'December', 'January',
-                                                'February', 'March', 'April', 'May'), index=0)
+        #option = st.selectbox('Select Month:', ('August', 'September', 'October', 'November', 'December', 'January',
+        #                                        'February', 'March', 'April', 'May'), index=0)
+        option1 = st.select_slider("Select Month",
+                                   options=['August', 'September', 'October', 'November', 'December', 'January',
+                                            'February', 'March', 'April', 'May'])
 
-        mn_data_option = mn_data.loc[mn_data['Month'] == option].sort_values(by=['Rank'])
+        mn_data_option = mn_data.loc[mn_data['Month'] == option1].sort_values(by=['Rank'])
         # mn_data_option.iloc[0, 2] = '🏆'
         st.write('\n')
         st.write('\n')

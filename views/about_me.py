@@ -32,7 +32,7 @@ _mgrDetails = st.container(border=True)
 with _help:
     st.write('How to Use:')
     st.caption('Click on on the League Statistics menu option to get all statistics for Fantasy Kings - 2024/25')
-    st.caption('Click on on the League Statistics menu option to get all managerial statistics from Fantasy Kings - 2024/25')
+    st.caption('Click on on the Manager Statistics menu option to get all managerial statistics from Fantasy Kings - 2024/25')
 
 lg = league(140708)
 lg_name = lg.get_league_name()

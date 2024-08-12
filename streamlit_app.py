@@ -19,10 +19,6 @@ analytics = st.Page(
     icon=':material/analytics:'
 )
 
-
-# --- NAVIGATION SETUP [WITHOUT SECTIONS] ---
-# pg = st.navigation(pages=[about_page, project_1_page, project_2_page])
-
 # --- NAVIGATION SETUP [WITH SECTIONS]---
 pg = st.navigation(
     {
@@ -30,7 +26,6 @@ pg = st.navigation(
         "Menu": [league, analytics],
     }
 )
-
 
 # --- SHARED ON ALL PAGES ---
 st.logo("assets/fpl.png")
