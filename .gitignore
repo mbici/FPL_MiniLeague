@@ -1,7 +1,7 @@
+.idea
 ./Gameweek_Results/*
 ./Monthly_Results/*
 ./Overall_Result/*
-.idea
 ./test.py
 ./wanotification.py
 ./PyWhatKit_DB.txt
