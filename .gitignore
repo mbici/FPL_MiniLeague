@@ -1,16 +1,2 @@
 .idea
-./Gameweek_Results/*
-./Monthly_Results/*
-./Overall_Result/*
-./test.py
-./wanotification.py
-./PyWhatKit_DB.txt
-./plots.py
 ./.streamlit/secrets.toml
-./archive
-./trend.py
-./overall.py
-./monthly.py
-./stats.py
-./winners.py
-./analysis.py
