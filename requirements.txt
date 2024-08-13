@@ -9,5 +9,4 @@ requests==2.31.0
 requests-oauthlib==2.0.0
 st-gsheets-connection @ git+https://github.com/masani1989/gsheets-connection.git@59fd12f97a041d5a384f6c0ab076a456658cd8c8
 streamlit==1.37.1
-streamlit-aggrid==1.0.5
 toml==0.10.2
