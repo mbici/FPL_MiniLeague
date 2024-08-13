@@ -110,7 +110,7 @@ with _container1:
         rank = gw_data_plr_filtered['Rank']
         pts = gw_data_plr_filtered['Points']
 
-        fig, ax1 = plt.subplots(figsize=(17, 4), facecolor=st.get_option('theme.backgroundColor'))
+        fig, ax1 = plt.subplots(figsize=(16, 5), facecolor=st.get_option('theme.backgroundColor'))
         # plt.figure(facecolor=st.get_option('theme.backgroundColor'))
 
         ax1.plot(gw, rank, color='white', marker='*', linewidth=0.7, label='Rank', alpha=0.7) # '#002b36'
