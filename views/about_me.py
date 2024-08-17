@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import Utils.refreshData as rd
 import streamlit as st
 from Utils.league import *
@@ -42,7 +42,7 @@ with rbtn:
     is_clicked = st.button('Refresh Data')
     if is_clicked:
         with st.spinner('In-Progress......'):
-            now = pd.DataFrame({'DataAsOf': [datetime.now().strftime("%Y-%m-%d %H:%M:%S")]})
+            now = pd.DataFrame({'DataAsOf': [(datetime.utcnow() + timedelta(minutes=330)).strftime("%Y-%m-%d %H:%M:%S")]})
             rd.refGw()
             gs.update_data(wksheet='DataDate', df=now)
             st.cache_data.clear()
