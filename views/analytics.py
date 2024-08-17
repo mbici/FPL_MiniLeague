@@ -11,7 +11,7 @@ import altair as alt
 lg = league(140708)
 
 st.markdown('<h1 style="color:#33ff33;font-size:60px;background-image:linear-gradient(45deg, #1A512E, #63A91F);"'
-            '>Manager Details</h1>', unsafe_allow_html=True)
+            '>Manager Performance - Analysis</h1>', unsafe_allow_html=True)
 st.divider()
 plyrs = lg.get_league_players()
 
@@ -43,7 +43,7 @@ with _container1:
     st.markdown('<h2 style="color:yellow;font-size:40px;">Comparison Trends</h2>', unsafe_allow_html=True)
     st.write('\n')
     option = st.multiselect(label='Select Players', options=plyr_lst,  # on_change=button_state_change(),
-                            placeholder="Choose Player(s)", label_visibility='collapsed', default=plyr_lst[1])
+                            placeholder="Choose Player(s)", label_visibility='collapsed', default=[plyr_lst[0], plyr_lst[1]])
     gw_data_option = gw_data_cum.query(f'Players in {option}').reset_index()
     # button_sent = st.button("SUBMIT")
     # if button_sent:
@@ -60,6 +60,13 @@ with _container1:
             else:
                 data = ph.plyr_hist([p[i] for i in option for p in plr_entry_link if i in p], plr_entry_link)
                 st.bar_chart(data, x="Season", y="Rank", color='Player Name', stack=False)
+                # chart2 = alt.Chart(data).mark_bar().encode(
+                #     x=alt.X('Season', scale=alt.Scale(reverse=False), axis=alt.Axis(grid=False)),
+                #     y=alt.Y('Rank', scale=alt.Scale(reverse=True), axis=alt.Axis(grid=True, tickCount=9)),
+                #     color=alt.Color("Player Name", legend=alt.Legend(orient='bottom'))
+                # )
+                #
+                # st.altair_chart(chart2, use_container_width=True)
 
     with col2:
         st.write('\n')
@@ -82,8 +89,8 @@ with _container1:
 
         if session_state['button_sent'] and option is not None:
             chart1 = alt.Chart(gw_data_option).mark_line(point=True).encode(
-                x=alt.X('Gameweek', scale=alt.Scale(reverse=False), axis=alt.Axis(grid=False)),  # Reverse the x-axis
-                y=alt.Y('Rank', scale=alt.Scale(reverse=True), axis=alt.Axis(grid=True, tickCount=9)),
+                x=alt.X('Gameweek', scale=alt.Scale(reverse=False, domain=[0, 38]), axis=alt.Axis(grid=False)),  # Reverse the x-axis
+                y=alt.Y('Rank', scale=alt.Scale(reverse=True, domain=[1, 21]), axis=alt.Axis(grid=True, tickCount=9)),
                 color=alt.Color("Players", legend=alt.Legend(orient='bottom'))
             ).properties(
                 # title='GW Rank',
@@ -119,9 +126,10 @@ with _container1:
         ax1.tick_params(axis='y', labelcolor='white')
         ax1.tick_params(axis='x', labelcolor='white')
         # ax1.gca().invert_yaxis()
-        ax1.set_ylim(0.5, 16)
+        ax1.set_ylim(0, 21)
+        ax1.set_xlim(0, 39)
         ax1.invert_yaxis()
-        ax1.axhspan(0, 20, facecolor=st.get_option('theme.backgroundColor'), alpha=0.9)
+        ax1.axhspan(0, 21, facecolor=st.get_option('theme.backgroundColor'), alpha=0.9)
 
         # Create a twin axis
         ax2 = ax1.twinx()

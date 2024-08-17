@@ -54,9 +54,9 @@ class league:
 
         try:
             players = [{'Id': player['entry'], 'Team': player['entry_name'],
-                        'Player': player['player_first_name'].capitalize() + ' ' + player[
-                            'player_last_name'].capitalize()}
-                       for player in data['new_entries']['results']]
+                        'Player': player['player_name'].split(' ')[0].capitalize() + ' '
+                                  + player['player_name'].split(' ')[1].capitalize()}
+                       for player in data['standings']['results']]
             logging.info('Total Players in the league -> ' + str(len(players)))
 
         except Exception as e:
@@ -70,17 +70,23 @@ class league:
         :return: List of players with latest standings
         """
 
+        global final_standings
         data = self.conn()
-        standings = []
+        stnd = pd.DataFrame(columns=['PlayerId', 'Points', 'Rank'])
+        lg_p = pd.DataFrame.from_records(self.get_league_players()).rename(columns={'Id': 'PlayerId'})
 
         try:
-            standings = [{player['entry']: {'total': player['total'], 'rank': player['rank_sort']}}
-                         for player in data['standings']['results']]
+            df = pd.DataFrame([[player['entry'], player['total'], player['rank']]
+                               for player in data['standings']['results']], columns=['PlayerId', 'Points', 'Rank'])
+            standings = pd.concat([stnd, df], ignore_index=True).sort_values(by=['Rank'])
+
+            final_standings = pd.merge(standings, lg_p, on='PlayerId')
+
 
         except Exception as e:
             print(e)
 
-        return standings
+        return final_standings
 
 
 if __name__ == '__main__':

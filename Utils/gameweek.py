@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta
+from typing import List, Any
+
 import requests
 import pandas as pd
 from Params import params as p
 import logging
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.INFO)
 
 
 def get_gameweek_data():
@@ -29,7 +31,7 @@ def get_recent_completed_gameweek():
     gameweeks = get_gameweek_data()['events']
     gw_df = pd.DataFrame.from_records(gameweeks).sort_values(by=['id'], ascending=False)
 
-    now = datetime.utcnow() # + timedelta(days=18)
+    now = datetime.utcnow()  # + timedelta(days=45)
 
     for index, row in gw_df.iterrows():
         if datetime.strptime(row['deadline_time'], '%Y-%m-%dT%H:%M:%SZ') < now:
@@ -70,6 +72,26 @@ def get_till_latest_phase():
 
     except Exception as e:
         logging.error(e)
+
+
+def get_gw_data(player, gw) -> dict:
+    pgw_dict = {}
+
+    manager_history_url = f'{p.base_url}entry/'
+    session = requests.session()
+    x = session.get(manager_history_url + str(player['Id']) + '/history/').json()
+    for event in x['current']:
+        if event['event'] == gw:
+            playerName = player['Player'].split(' ')[0].capitalize() + ' ' + player['Player'].split(' ')[1].capitalize()
+            gross = event['points']
+            transfer = event['event_transfers_cost']
+            netPoints = event['points'] - event['event_transfers_cost']
+            pgw_dict = {'PlayerId': player['Id'], 'Player': playerName, 'Gross': gross, 'Transfer': transfer,
+                        'Points': netPoints, 'Rank': '', 'Gameweek': gw}
+
+    return pgw_dict
+    # return {'PlayerId': 123, 'Player': 'Himanshu Masani', 'Gross': 92, 'Transfer': 8,
+    #         'Points': 84, 'Rank': '', 'Gameweek': 23}
 
 
 if __name__ == '__main__':
