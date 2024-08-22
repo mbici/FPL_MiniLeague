@@ -8,6 +8,7 @@ import Utils.gameweek as gwk
 st.markdown(f'<h1 style="color:#33ff33;font-size:60px;background-image:linear-gradient(45deg, #1A512E, #63A91F);"'
             f'>FPL Mini-League Details App</h1>', unsafe_allow_html=True)
 
+# CSS styles for various elements on the screen
 st.html(
     '''
     <style>
@@ -38,6 +39,7 @@ st.markdown("""
 st.divider()
 rbtn, dd = st.columns([1, 7])
 
+# Section for refresh button which will refresh the dataset in the sheets and update the cached info in the app
 with rbtn:
     is_clicked = st.button('Refresh Data')
     if is_clicked:
@@ -47,6 +49,7 @@ with rbtn:
             gs.update_data(wksheet='DataDate', df=now)
             st.cache_data.clear()
 
+# Section to display the latest date for which the data is present in the app
 with dd:
     dataDate = gs.data_load(wksheet='DataDate', cols=['DataAsOf'])
     latest_gw = gwk.get_recent_completed_gameweek()
@@ -61,6 +64,7 @@ st.write('\n')
 _help = st.container(border=True)
 _mgrDetails = st.container(border=True)
 
+# Usage Guidelines
 with _help:
     st.markdown(
         """
@@ -81,8 +85,6 @@ with _help:
            - :grey[The next two tables are for Gameweek and Monthly rankings. Use the slider option to choose 
            any GW and Month]
            - :grey[The last table on this page is for Total Winnings per player till date]
-           - :grey[Please note: All the winnings information is live and for ongoing gameweeks it is calculated based on 
-           player's live position]
            
         :green[**Manager Statistics:**]
            - :grey[Click on this option in the sidebar navigation pane, to get information on manager performances 
@@ -96,16 +98,6 @@ with _help:
 
 lg = league(140708)
 lg_name = lg.get_league_name()
-
-# with _mgrDetails:
-#     st.write('\n')
-#     st.subheader(lg_name, anchor=False)
-#
-#     st.markdown('<p class="big-font">Manager List</p>', unsafe_allow_html=True)
-#     df = st.dataframe(sorted(lg.get_league_players(), key=lambda i: i['Player']), hide_index=True,
-#                       use_container_width=True,
-#                       column_config={'Id': None},
-#                       column_order=['Player', 'Team'])
 
 st.divider()
 

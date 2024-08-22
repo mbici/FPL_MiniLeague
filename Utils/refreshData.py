@@ -7,12 +7,27 @@ currGw = gwk.get_recent_completed_gameweek()
 
 
 def append_rows(sheet_name, wksheet_name, val):
+    """
+    Append rows to an existing googlesheet
+    :param sheet_name: Workbook name
+    :param wksheet_name: Worksheet name
+    :param val: List of values to be appended
+    :return:
+    """
     client = gs.authenticate_google_sheets()
     sheet = client.open(sheet_name).worksheet(wksheet_name)
     sheet.append_rows(val)
 
 
 def delete_rows_based_on_column(sheet_name, wksheet_name, column_index, value_to_delete):
+    """
+    Delete rows from a googlesheet
+    :param sheet_name: Workbook Name
+    :param wksheet_name: Worksheet Name
+    :param column_index: Column index number
+    :param value_to_delete: Row to be deleted
+    :return:
+    """
     client = gs.authenticate_google_sheets()
     sheet = client.open(sheet_name).worksheet(wksheet_name)
 

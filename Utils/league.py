@@ -72,12 +72,13 @@ class league:
 
         global final_standings
         data = self.conn()
-        stnd = pd.DataFrame(columns=['PlayerId', 'Points', 'Rank'])
+        stnd = pd.DataFrame(columns=['PlayerId', 'Points', 'Rank', 'Last_Rank'])
         lg_p = pd.DataFrame.from_records(self.get_league_players()).rename(columns={'Id': 'PlayerId'})
 
         try:
-            df = pd.DataFrame([[player['entry'], player['total'], player['rank']]
-                               for player in data['standings']['results']], columns=['PlayerId', 'Points', 'Rank'])
+            df = pd.DataFrame([[player['entry'], player['total'], player['rank'], player['last_rank']]
+                               for player in data['standings']['results']],
+                              columns=['PlayerId', 'Points', 'Rank', 'Last_Rank'])
             standings = pd.concat([stnd, df], ignore_index=True).sort_values(by=['Rank'])
 
             final_standings = pd.merge(standings, lg_p, on='PlayerId')
