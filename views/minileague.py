@@ -2,7 +2,11 @@ import pandas as pd
 import streamlit as st
 import Utils.gsheet_conn as gs
 import Utils.gameweek as gwk
+from Utils.league import *
 
+global ovr_data, gw_data, mn_data
+
+# Below are the css settings for visual formatting of the metric widgets
 css = '''
             [data-testid="stMetric"] {
                 width: 250px;
@@ -23,6 +27,14 @@ css = '''
                 color: #35e8d9;
             }
             
+            [data-testid="stMetricDelta"] {
+                width: fit-content;
+                margin: auto;
+                overflow-wrap: break-word;
+                white-space: break-spaces;
+                font-size: 20px;
+            }
+            
             [data-testid="stMetricLabel"] {
                 width: fit-content;
                 margin: auto;
@@ -41,68 +53,92 @@ css = '''
             }
             '''
 
+# Checking for current GW and Month if complete or not and accordingly setting up a session_state param,
+# which is used while populating the winnings across multiple sections of this page.
+# Basically if the current GW and/or Month is not complete then it is not considered while calculating winnings
+if 'gw_status' not in st.session_state:
+    st.session_state['gw_status'] = gwk.get_recent_completed_gameweek()[1]
+    if not st.session_state['gw_status']:
+        st.session_state['latest_gw'] = gwk.get_recent_completed_gameweek()[0]
+    else:
+        st.session_state['latest_gw'] = 99
+
+    st.session_state['latest_mn_last_gw'] = gwk.get_till_latest_phase()[1][1]
+    if (st.session_state['latest_mn_last_gw'] > gwk.get_recent_completed_gameweek()[0]
+            or (not gwk.get_recent_completed_gameweek()[1]
+                and st.session_state['latest_mn_last_gw'] == gwk.get_recent_completed_gameweek()[0])):
+        st.session_state['latest_mn'] = gwk.get_till_latest_phase()[0]
+    else:
+        st.session_state['latest_mn'] = 'y'
+
 
 def data_refresh():
+    """
+    Function to refresh data from the googlesheets containing the GW, Monthly and Overall standings and points
+    :return:
+    """
     global ovr_data, gw_data, mn_data
-    ovr_data = gs.data_load('Overall', ['Rank', 'Player', 'Points']).astype({'Rank': 'int64', 'Points': 'int64'})
-    gw_data = gs.data_load('Gameweek', ['Player', 'Gross', 'Transfer', 'Points', 'Rank', 'Gameweek']).astype(
-        {'Rank': 'int64', 'Points': 'int64', 'Gross': 'int64', 'Transfer': 'int64'})
-    mn_data = gs.data_load('Monthly', ['Player', 'Points', 'Rank', 'Month']).astype(
-        {'Rank': 'int64', 'Points': 'int64'})
 
-    ovr_data.loc[0, ['Rank']] = '🥇'
-    ovr_data.loc[1, ['Rank']] = '🥈'
-    ovr_data.loc[2, ['Rank']] = '🥉'
-    ovr_data.loc[3, ['Rank']] = '🏅'
+    # Read data from various sheets into the globally defined variables. This data is for overall, GW and monthly
+    ovr_data = gs.data_load('Overall', ['Rank', 'Player', 'Points', 'Last_Rank']) \
+        .astype({'Rank': 'int64', 'Last_Rank': 'int64', 'Points': 'int64'})
+    gw_data = gs.data_load('Gameweek', ['Player', 'Gross', 'Transfer', 'Points', 'Rank', 'Gameweek']) \
+        .astype({'Rank': 'int64', 'Points': 'int64', 'Gross': 'int64', 'Transfer': 'int64'})
+    mn_data = gs.data_load('Monthly', ['Player', 'Points', 'Rank', 'Month']) \
+        .astype({'Rank': 'int64', 'Points': 'int64'})
+
+    # ovr_data.loc[0, ['Rank']] = '🥇'
+    # ovr_data.loc[1, ['Rank']] = '🥈'
+    # ovr_data.loc[2, ['Rank']] = '🥉'
+    # ovr_data.loc[3, ['Rank']] = '🏅'
 
 
 data_refresh()
 
+# Two containers for Overall Standings & Weekly, Monthly and Winnings data
 _overall = st.container()
 _wk_mnth = st.container(border=True)
-_refresh = st.container(border=True)
-global ovr_data, gw_data, mn_data
-
-
-def style_dataframe(df):
-    return df.style.set_table_styles(
-        [{
-            'selector': 'th',
-            'props': [
-                ('background-color', '#4CAF50'),
-                ('color', 'white'),
-                ('font-family', 'Arial, sans-serif'),
-                ('font-size', '16px')
-            ]
-        },
-            {
-                'selector': 'td, th',
-                'props': [
-                    ('border', '2px solid #4CAF50')
-                ]
-            }]
-    )
 
 
 def highlight_ranker(row):
+    """
+    Function to highlight the background of row with Rank value 1 with Teal color
+    :param row: pandas dataframe row
+    :return: value for pandas' style apply method
+    """
     return ['background-color: Teal;'] * len(row) if row.Rank == 1 else ['background-color: '] * len(row)
 
 
 def top_row(row):
+    """
+    Function to change font-size of row with Rank value 1.
+    :param row: pandas dataframe row
+    :return: value for pandas' style apply method
+    """
     return ['font-size: 100pt'] * len(row) if row.Rank == 1 else ['font-size: '] * len(row)
 
 
+# Below section is for the overall rankings container which also contains the manager metric widgets.
+# The container is split into two columns, one for Overall Standings and the other for widgets
+
 with _overall:
+    # Refresh data from sheets before populating the standings. The data is cached so will only run the first time
     data_refresh()
+
+    # Show formatted title section for the page
     st.markdown(f'<h1 style="color:#33ff33;font-size:60px;background-image:linear-gradient(45deg, #1A512E, #63A91F);"'
                 f'>Leaderboard & Winnings</h1>', unsafe_allow_html=True)
-    # st.title(f'{lg_name} - Statistics', anchor=False)
     st.divider()
 
+    # Create a space with 2 columns for overall standing and widgets respectively
     oc, mc = st.columns(2)
+
+    # Overall Standings section
     with oc:
         st.subheader('Overall Ranking', anchor=False)
         st.caption('Select any one row using the first column for individual metrics')
+
+        # Overall Standings data to be shown with single row selection feature enabled and store in event variable
         event = st.dataframe(
             ovr_data.style.applymap(lambda _: "background-color: Teal;", subset=([0, 1, 2, 3], slice(None))),
             hide_index=True,  # use_container_width=True,
@@ -117,7 +153,13 @@ with _overall:
         selection = event.selection.rows
         person = ovr_data.iloc[selection]['Player'].to_string(index=False)
         personC = person.split(' ')[0].capitalize() + ' ' + person.split(' ')[1].capitalize()
-        personC = {len(selection) == 0: '**Select a player first**', len(selection) > 0: personC}.get(True)
+
+        # In case the selection is None then a static text to be displayed above the widgets section else selected name
+        personC = {len(selection) == 0: '***Select a player***', len(selection) > 0: personC}.get(True)
+
+        # Below lines are basically filtering the gameweek and monthly dataframes for the selected manager name
+        # Then if the manager has attained rank #1 against any gameweek and/or month, it is considered
+        # to calculate the eventual winning amount till date for that manager, barring any ongoing month and/or gw
 
         filtered_data_gw = gw_data.query("Player == '{0}'".format(person)).reset_index().sort_values('Gameweek')
         filtered_data_mn = mn_data.query("Player == '{0}'".format(personC)).reset_index()
@@ -125,19 +167,21 @@ with _overall:
         gw_data_rankers = gw_data[gw_data['Rank'] == 1].groupby('Gameweek').size().reset_index(name='Count') \
             .sort_values('Gameweek')
         mn_data_rankers = mn_data[mn_data['Rank'] == 1].groupby('Month').size().reset_index(name='Count')
-        # st.write(gw_data_rankers)
 
         merged_gw_df = pd.merge(filtered_data_gw, gw_data_rankers, on='Gameweek')
         merged_mn_df = pd.merge(filtered_data_mn, mn_data_rankers, on='Month')
 
-        filtered_gw_winnings = merged_gw_df.query('Rank == 1').reset_index()
+        filtered_gw_winnings = merged_gw_df.query(
+            f"Rank == 1 and Gameweek!={st.session_state['latest_gw']}").reset_index()
         filtered_gw_winnings['total'] = 280 / filtered_gw_winnings['Count']
         gw_winnings = filtered_gw_winnings['total'].sum()
 
-        filtered_mn_winnings = merged_mn_df.query('Rank == 1').reset_index()
+        filtered_mn_winnings = merged_mn_df.query(
+            f"Rank == 1 and Month!='{st.session_state['latest_mn']}'").reset_index()
         filtered_mn_winnings['total'] = 460 / filtered_mn_winnings['Count']
         mn_winnings = filtered_mn_winnings['total'].sum()
 
+    # Metric Widgets section
     with mc:
         st.markdown(1 * "<br />", unsafe_allow_html=True)
         st.markdown(f"<h4 style='text-align: center; color: white;'>{personC}</h4>", unsafe_allow_html=True)
@@ -151,24 +195,43 @@ with _overall:
             </style>
             """, unsafe_allow_html=True)
 
-            st.metric('Weekly Winnings', '₹' + str(gw_winnings))
+            g, m = st.columns(2)
+            with g:
+                st.metric('Weekly Winnings', '₹ ' + str(gw_winnings))
+
+            with m:
+                st.metric('Monthly Winnings', '₹ ' + str(mn_winnings))
+
             st.markdown(2 * "<br />", unsafe_allow_html=True)
-            st.metric('Monthly Winnings', '₹' + str(mn_winnings))
+
+            st.metric('Rank', {len(selection) > 0: ovr_data.loc[ovr_data['Player'] == personC, 'Rank']
+                      .to_string(index=False)}.get(True),
+                      delta={len(selection) > 0: ovr_data.loc[ovr_data['Player'] == personC, 'Last_Rank']
+                      .to_string(index=False)}.get(True),
+                      delta_color='normal')
 
     st.write('\n')
     st.write('\n')
     st.write('\n')
 
+# Weekly, Monthly and Winnings table section
 with _wk_mnth:
+    # Below few lines are to calculate the winnings for each player till the latest completed gameweek and month
     merged_gw_winnings_df = pd.merge(gw_data, gw_data_rankers, on='Gameweek')
     merged_mn_winnings_df = pd.merge(mn_data, mn_data_rankers, on='Month')
 
-    merged_gw_winnings_df.loc[merged_gw_winnings_df['Rank'] == 1, 'total'] = 280 / merged_gw_winnings_df['Count']
+    merged_gw_winnings_df.loc[(merged_gw_winnings_df['Rank'] == 1)
+                              & (merged_gw_winnings_df['Gameweek'] != st.session_state['latest_gw']), 'total'] \
+        = 280 / merged_gw_winnings_df['Count']
+
     merged_gw_winnings_final = merged_gw_winnings_df.groupby('Player')['total'].sum().reset_index()
 
-    merged_mn_winnings_df.loc[merged_mn_winnings_df['Rank'] == 1, 'total'] = 460 / merged_mn_winnings_df['Count']
+    merged_mn_winnings_df.loc[(merged_mn_winnings_df['Rank'] == 1)
+                              & (merged_mn_winnings_df['Month'] != f"{st.session_state['latest_mn']}"), 'total'] \
+        = 460 / merged_mn_winnings_df['Count']
+
     merged_mn_winnings_final = merged_mn_winnings_df.groupby('Player')['total'].sum().reset_index()
-    merged_mn_winnings_final = merged_mn_winnings_final.append(merged_gw_winnings_final)
+    merged_mn_winnings_final = pd.concat([merged_mn_winnings_final, merged_gw_winnings_final], ignore_index=True)
     merged_mn_winnings_final = merged_mn_winnings_final.groupby(merged_mn_winnings_final['Player'])['total'] \
         .sum().reset_index()
     merged_mn_winnings_final.rename(columns={'total': 'Winnings'}, inplace=True)
@@ -178,7 +241,9 @@ with _wk_mnth:
     third = ovr_data.loc[2, ['Player']].to_string(index=False)
     fourth = ovr_data.loc[3, ['Player']].to_string(index=False)
 
-    gweek = gwk.get_recent_completed_gameweek()[0]  #### uncomment this after gameweek1
+    gweek = gwk.get_recent_completed_gameweek()[0]
+
+    # Consider the overall winnings in calculation only during and after gameweek 38
     if gweek == 38:
         merged_mn_winnings_final.loc[merged_mn_winnings_final['Player'] == first, 'Winnings'] += 7200
         merged_mn_winnings_final.loc[merged_mn_winnings_final['Player'] == second, 'Winnings'] += 4500
@@ -188,6 +253,8 @@ with _wk_mnth:
     merged_mn_winnings_final.sort_values(by=['Winnings'], inplace=True, ascending=False)
 
     gwr, mnr, win = st.columns([2, 1, 1])
+
+    # Gameweek Ranking Table section
     with gwr:
         st.subheader('Gameweek Ranking', anchor=False)
         # option = st.selectbox('Select Gameweek:', tuple(range(1, 38)), index=0)
@@ -202,10 +269,9 @@ with _wk_mnth:
                      column_config={'PlayerId': None},
                      column_order=['Rank', 'Player', 'Gross', 'Transfer', 'Points'], height=780)
 
+    # Monthly Ranking Table section
     with mnr:
         st.subheader('Monthly Ranking', anchor=False)
-        # option = st.selectbox('Select Month:', ('August', 'September', 'October', 'November', 'December', 'January',
-        #                                        'February', 'March', 'April', 'May'), index=0)
         option1 = st.select_slider("Select Month",
                                    options=['August', 'September', 'October', 'November', 'December', 'January',
                                             'February', 'March', 'April', 'May'])
@@ -220,6 +286,7 @@ with _wk_mnth:
                      column_config={'PlayerId': None}
                      )
 
+    # Winnings Table section
     with win:
         st.subheader('Total Winnings', anchor=False)
         st.write('\n')

@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from typing import List, Any
-
 import requests
 import pandas as pd
 from Params import params as p
@@ -74,7 +73,27 @@ def get_till_latest_phase():
         logging.error(e)
 
 
+def get_ongoing_month():
+    """
+    Get the recently completed month details
+    :return:
+    """
+    gw = get_recent_completed_gameweek()
+    mn = get_till_latest_phase()
+
+    if (gw[0] == mn[1][1] and not gw[1]) or gw[0] < mn[1][1]:
+        return mn[0]
+    else:
+        return 'x'
+
+
 def get_gw_data(player, gw) -> dict:
+    """
+    Function to get data from fpl for mentioned gameweek and prepare data points from it per manager
+    :param player: player id
+    :param gw: gameweek number
+    :return: dictionary of values for each player
+    """
     pgw_dict = {}
 
     manager_history_url = f'{p.base_url}entry/'
@@ -90,8 +109,6 @@ def get_gw_data(player, gw) -> dict:
                         'Points': netPoints, 'Rank': '', 'Gameweek': gw}
 
     return pgw_dict
-    # return {'PlayerId': 123, 'Player': 'Himanshu Masani', 'Gross': 92, 'Transfer': 8,
-    #         'Points': 84, 'Rank': '', 'Gameweek': 23}
 
 
 if __name__ == '__main__':

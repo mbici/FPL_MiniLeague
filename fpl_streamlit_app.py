@@ -1,6 +1,7 @@
 import streamlit as st
 
 st.set_page_config(layout="wide")
+
 # --- PAGE SETUP ---
 about_page = st.Page(
     'views/about_me.py',

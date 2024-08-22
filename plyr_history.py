@@ -7,8 +7,15 @@ logging.basicConfig(level=logging.WARNING)
 
 
 def plyr_hist(pl=None, plyrLink=None):
+    """
+    Function to return the historical season data for managers
+    :param pl: player id from FPL
+    :param plyrLink: dictionary of player id and player name
+    :return: dataframe of historical ranks for all managers in Fantasy Kings
+    """
+
+    df = pd.DataFrame(columns=['Season', 'Rank', 'PlayerId', 'Player Name'])
     try:
-        df = pd.DataFrame(columns=['Season', 'Rank', 'PlayerId', 'Player Name'])
         for i in pl:
             session = requests.session()
             data = session.get(f'{p.base_url}entry/{i}/history/').json()
