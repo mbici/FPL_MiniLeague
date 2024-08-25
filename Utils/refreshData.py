@@ -1,7 +1,6 @@
 import Utils.gsheet_conn as gs
 from Utils.league import *
 import Utils.gameweek as gwk
-import streamlit as st
 
 lg = league(140708)
 currGw = gwk.get_recent_completed_gameweek()
@@ -51,7 +50,6 @@ def refGw():
     Function to refresh the latest ongoing/completed gameweek's data
     :return:
     """
-    st.write(currGw[0])
     plList = lg.get_league_players()
     delete_rows_based_on_column('FPL_Fantasy_Kings', 'Gameweek', 7, f'{currGw[0]}')
     gw_plr_list = []
@@ -98,6 +96,8 @@ def refOverall():
     """
     standings_df = lg.get_league_standings()
     gs.update_data('Overall', standings_df)
+
+    return currGw[0]
 
 
 if __name__ == '__main__':
