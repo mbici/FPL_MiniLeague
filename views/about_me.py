@@ -44,10 +44,10 @@ with rbtn:
     is_clicked = st.button('Refresh Data')
     if is_clicked:
         with st.spinner('In-Progress......'):
+            st.cache_data.clear()
             now = pd.DataFrame({'DataAsOf': [(datetime.utcnow() + timedelta(minutes=330)).strftime("%Y-%m-%d %H:%M:%S")]})
             rd.refGw()
             gs.update_data(wksheet='DataDate', df=now)
-            st.cache_data.clear()
 
 # Section to display the latest date for which the data is present in the app
 with dd:
