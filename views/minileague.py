@@ -206,8 +206,10 @@ with _overall:
 
             st.metric('Rank', {len(selection) > 0: ovr_data.loc[ovr_data['Player'] == personC, 'Rank']
                       .to_string(index=False)}.get(True),
-                      delta={len(selection) > 0: ovr_data.loc[ovr_data['Player'] == personC, 'Last_Rank']
-                      .to_string(index=False)}.get(True),
+                      delta=int({len(selection) > 0: ovr_data.loc[ovr_data['Player'] == personC, 'Last_Rank']
+                      .to_string(index=False)}.get(True, 0)) -
+                            int({len(selection) > 0: ovr_data.loc[ovr_data['Player'] == personC, 'Rank']
+                      .to_string(index=False)}.get(True, 0)),
                       delta_color='normal')
 
     st.write('\n')
