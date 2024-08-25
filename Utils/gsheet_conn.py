@@ -6,7 +6,6 @@ import json
 import toml
 
 
-@st._cache_data
 def data_load(wksheet, cols):
     """
     Function to load data from a googlesheet into a pandas dataframe
