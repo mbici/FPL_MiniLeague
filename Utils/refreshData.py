@@ -2,8 +2,8 @@ import Utils.gsheet_conn as gs
 from Utils.league import *
 import Utils.gameweek as gwk
 
+
 lg = league(140708)
-currGw = gwk.get_recent_completed_gameweek()
 
 
 def append_rows(sheet_name, wksheet_name, val):
@@ -50,6 +50,7 @@ def refGw():
     Function to refresh the latest ongoing/completed gameweek's data
     :return:
     """
+    currGw = gwk.get_recent_completed_gameweek()
     plList = lg.get_league_players()
 
     delete_rows_based_on_column('FPL_Fantasy_Kings', 'Gameweek', 7, f'{currGw[0]}')
@@ -72,6 +73,7 @@ def refMnth():
     Function to refresh data for all month's up until ongoing one
     :return:
     """
+    currGw = gwk.get_recent_completed_gameweek()
     phases = gwk.get_phases()
     gw_mnth_lkp = pd.DataFrame(columns=['Gameweek', 'Month'])
     for i in range(1, currGw[0] + 1):
@@ -95,6 +97,7 @@ def refOverall():
     Function to refresh the overall points and rank data
     :return:
     """
+    currGw = gwk.get_recent_completed_gameweek()
     standings_df = lg.get_league_standings()
     gs.update_data('Overall', standings_df)
 
