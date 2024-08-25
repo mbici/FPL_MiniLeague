@@ -51,7 +51,7 @@ def refGw():
     :return:
     """
     plList = lg.get_league_players()
-    print(currGw[0])
+
     delete_rows_based_on_column('FPL_Fantasy_Kings', 'Gameweek', 7, f'{currGw[0]}')
     gw_plr_list = []
 
