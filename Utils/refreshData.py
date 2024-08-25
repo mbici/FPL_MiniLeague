@@ -53,11 +53,11 @@ def refGw():
     """
     plList = lg.get_league_players()
 
-    delete_rows_based_on_column('FPL_Fantasy_Kings', 'Gameweek', 7, '2')
+    delete_rows_based_on_column('FPL_Fantasy_Kings', 'Gameweek', 7, f'{currGw[0]}')
     gw_plr_list = []
 
     for i in plList:
-        plr_dict = gwk.get_gw_data(i, 2)
+        plr_dict = gwk.get_gw_data(i, currGw[0])
         gw_plr_list.append(plr_dict)
 
     gw_df = pd.DataFrame.from_records(gw_plr_list)
@@ -75,7 +75,7 @@ def refMnth():
     """
     phases = gwk.get_phases()
     gw_mnth_lkp = pd.DataFrame(columns=['Gameweek', 'Month'])
-    for i in range(1, 2 + 1):
+    for i in range(1, currGw[0] + 1):
         for k, v in phases.items():
             if v[0] <= i <= v[1] and k != 'Overall':
                 df_temp = pd.DataFrame([{'Gameweek': i, 'Month': k}])
