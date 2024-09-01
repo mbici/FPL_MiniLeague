@@ -39,7 +39,7 @@ class league:
 
         data = self.conn()
         league_name = data['league']['name']
-        logging.info('League Name is -> ' + str(league_name))
+        logging.info('League Name is -> ' + league_name)
 
         return league_name
 

@@ -4,7 +4,6 @@ import Utils.gameweek as gwk
 
 
 lg = league(140708)
-currGw = gwk.get_recent_completed_gameweek()
 
 
 def append_rows(sheet_name, wksheet_name, val):
@@ -52,6 +51,7 @@ def refGw():
     :return:
     """
     plList = lg.get_league_players()
+    currGw = gwk.get_recent_completed_gameweek()
 
     delete_rows_based_on_column('FPL_Fantasy_Kings', 'Gameweek', 7, f'{currGw[0]}')
     gw_plr_list = []
@@ -64,18 +64,18 @@ def refGw():
     gw_df['Rank'] = gw_df.groupby('Gameweek')['Points'].rank(ascending=False, method='dense')
 
     append_rows('FPL_Fantasy_Kings', 'Gameweek', gw_df.values.tolist())
-    refMnth()
+    refMnth(currGw[0])
     refOverall()
 
 
-def refMnth():
+def refMnth(g):
     """
     Function to refresh data for all month's up until ongoing one
     :return:
     """
     phases = gwk.get_phases()
     gw_mnth_lkp = pd.DataFrame(columns=['Gameweek', 'Month'])
-    for i in range(1, currGw[0] + 1):
+    for i in range(1, g + 1):
         for k, v in phases.items():
             if v[0] <= i <= v[1] and k != 'Overall':
                 df_temp = pd.DataFrame([{'Gameweek': i, 'Month': k}])
