@@ -58,10 +58,10 @@ css = '''
 # Basically if the current GW and/or Month is not complete then it is not considered while calculating winnings
 if 'gw_status' not in st.session_state:
     st.session_state['gw_status'] = gwk.get_recent_completed_gameweek()[1]
-    if not st.session_state['gw_status']:
+    if st.session_state['gw_status']:
         st.session_state['latest_gw'] = gwk.get_recent_completed_gameweek()[0]
     else:
-        st.session_state['latest_gw'] = 99
+        st.session_state['latest_gw'] = gwk.get_recent_completed_gameweek()[0] - 1
 
     st.session_state['latest_mn_last_gw'] = gwk.get_till_latest_phase()[1][1]
     if ((not gwk.get_recent_completed_gameweek()[1]
@@ -69,7 +69,7 @@ if 'gw_status' not in st.session_state:
             st.session_state['latest_mn_last_gw'] >= gwk.get_recent_completed_gameweek()[0]):
         st.session_state['latest_mn'] = gwk.get_till_latest_phase()[0]
     else:
-        st.session_state['latest_mn'] = 'y'
+        st.session_state['latest_mn'] = 'August'
 
 
 def data_refresh():
@@ -172,12 +172,12 @@ with _overall:
         merged_mn_df = pd.merge(filtered_data_mn, mn_data_rankers, on='Month')
 
         filtered_gw_winnings = merged_gw_df.query(
-            f"Rank == 1 and Gameweek!={st.session_state['latest_gw']}").reset_index()
+            f"Rank == 1 and Gameweek<={st.session_state['latest_gw']}").reset_index()
         filtered_gw_winnings['total'] = 280 / filtered_gw_winnings['Count']
         gw_winnings = filtered_gw_winnings['total'].sum()
 
         filtered_mn_winnings = merged_mn_df.query(
-            f"Rank == 1 and Month!='{st.session_state['latest_mn']}'").reset_index()
+            f"Rank == 1 and Month == '{st.session_state['latest_mn']}'").reset_index()
         filtered_mn_winnings['total'] = 460 / filtered_mn_winnings['Count']
         mn_winnings = filtered_mn_winnings['total'].sum()
 
@@ -223,13 +223,13 @@ with _wk_mnth:
     merged_mn_winnings_df = pd.merge(mn_data, mn_data_rankers, on='Month')
 
     merged_gw_winnings_df.loc[(merged_gw_winnings_df['Rank'] == 1)
-                              & (merged_gw_winnings_df['Gameweek'] != st.session_state['latest_gw']), 'total'] \
+                              & (merged_gw_winnings_df['Gameweek'] <= st.session_state['latest_gw']), 'total'] \
         = 280 / merged_gw_winnings_df['Count']
 
     merged_gw_winnings_final = merged_gw_winnings_df.groupby('Player')['total'].sum().reset_index()
 
     merged_mn_winnings_df.loc[(merged_mn_winnings_df['Rank'] == 1)
-                              & (merged_mn_winnings_df['Month'] != f"{st.session_state['latest_mn']}"), 'total'] \
+                              & (merged_mn_winnings_df['Month'] == f"{st.session_state['latest_mn']}"), 'total'] \
         = 460 / merged_mn_winnings_df['Count']
 
     merged_mn_winnings_final = merged_mn_winnings_df.groupby('Player')['total'].sum().reset_index()
