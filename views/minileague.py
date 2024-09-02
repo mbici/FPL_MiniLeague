@@ -233,7 +233,7 @@ with _wk_mnth:
     merged_gw_winnings_final = merged_gw_winnings_df.groupby('Player')['total'].sum().reset_index()
 
     merged_mn_winnings_df.loc[(merged_mn_winnings_df['Rank'] == 1)
-                              & (merged_mn_winnings_df['Month'].isin({st.session_state['latest_mn']})), 'total'] \
+                              & (merged_mn_winnings_df['Month'].isin(st.session_state['latest_mn'])), 'total'] \
         = 460 / merged_mn_winnings_df['Count']
 
     merged_mn_winnings_final = merged_mn_winnings_df.groupby('Player')['total'].sum().reset_index()
