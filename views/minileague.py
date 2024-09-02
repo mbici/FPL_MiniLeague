@@ -69,7 +69,7 @@ if 'gw_status' not in st.session_state:
     # if ((not gwk.get_recent_completed_gameweek()[1]
     #      and st.session_state['latest_mn_last_gw'] == gwk.get_recent_completed_gameweek()[0]) or
     #         st.session_state['latest_mn_last_gw'] >= gwk.get_recent_completed_gameweek()[0]):
-    for k, v in mnths:
+    for k, v in mnths.items():
         if k != 'Overall' and v[0] <= st.session_state['latest_gw']:
             mnths_lst.append(k)
             # st.session_state['latest_mn'] = gwk.get_till_latest_phase()[0]
