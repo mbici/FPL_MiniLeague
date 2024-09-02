@@ -64,9 +64,9 @@ if 'gw_status' not in st.session_state:
         st.session_state['latest_gw'] = 99
 
     st.session_state['latest_mn_last_gw'] = gwk.get_till_latest_phase()[1][1]
-    if (st.session_state['latest_mn_last_gw'] > gwk.get_recent_completed_gameweek()[0]
-            or (not gwk.get_recent_completed_gameweek()[1]
-                and st.session_state['latest_mn_last_gw'] == gwk.get_recent_completed_gameweek()[0])):
+    if ((not gwk.get_recent_completed_gameweek()[1]
+         and st.session_state['latest_mn_last_gw'] == gwk.get_recent_completed_gameweek()[0]) or
+            st.session_state['latest_mn_last_gw'] >= gwk.get_recent_completed_gameweek()[0]):
         st.session_state['latest_mn'] = gwk.get_till_latest_phase()[0]
     else:
         st.session_state['latest_mn'] = 'y'
