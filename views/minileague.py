@@ -233,7 +233,7 @@ with _wk_mnth:
     merged_gw_winnings_final = merged_gw_winnings_df.groupby('Player')['total'].sum().reset_index()
 
     merged_mn_winnings_df.loc[(merged_mn_winnings_df['Rank'] == 1)
-                              & (merged_mn_winnings_df['Month'] in f"{st.session_state['latest_mn']}"), 'total'] \
+                              & (merged_mn_winnings_df['Month'].isin(f"{st.session_state['latest_mn']}")), 'total'] \
         = 460 / merged_mn_winnings_df['Count']
 
     merged_mn_winnings_final = merged_mn_winnings_df.groupby('Player')['total'].sum().reset_index()
@@ -280,7 +280,7 @@ with _wk_mnth:
         st.subheader('Monthly Ranking', anchor=False)
         option1 = st.select_slider("Select Month",
                                    options=['August', 'September', 'October', 'November', 'December', 'January',
-                                            'February', 'March', 'April', 'May'], value=st.session_state['latest_mn'])
+                                            'February', 'March', 'April', 'May'], value=st.session_state['latest_mn'][-1])
 
         mn_data_option = mn_data.loc[mn_data['Month'] == option1].sort_values(by=['Rank'])
         # mn_data_option.iloc[0, 2] = '🏆'
