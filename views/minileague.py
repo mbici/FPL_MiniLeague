@@ -63,13 +63,17 @@ if 'gw_status' not in st.session_state:
     else:
         st.session_state['latest_gw'] = gwk.get_recent_completed_gameweek()[0] - 1
 
+    mnths = gwk.get_phases()
+    mnths_lst = ['August']
     st.session_state['latest_mn_last_gw'] = gwk.get_till_latest_phase()[1][1]
-    if ((not gwk.get_recent_completed_gameweek()[1]
-         and st.session_state['latest_mn_last_gw'] == gwk.get_recent_completed_gameweek()[0]) or
-            st.session_state['latest_mn_last_gw'] >= gwk.get_recent_completed_gameweek()[0]):
-        st.session_state['latest_mn'] = gwk.get_till_latest_phase()[0]
-    else:
-        st.session_state['latest_mn'] = 'August'
+    # if ((not gwk.get_recent_completed_gameweek()[1]
+    #      and st.session_state['latest_mn_last_gw'] == gwk.get_recent_completed_gameweek()[0]) or
+    #         st.session_state['latest_mn_last_gw'] >= gwk.get_recent_completed_gameweek()[0]):
+    for k, v in mnths:
+        if k != 'Overall' and v[0] <= st.session_state['latest_gw']:
+            mnths_lst.append(k)
+            # st.session_state['latest_mn'] = gwk.get_till_latest_phase()[0]
+    st.session_state['latest_mn'] = mnths_lst
 
 
 def data_refresh():
@@ -177,7 +181,7 @@ with _overall:
         gw_winnings = filtered_gw_winnings['total'].sum()
 
         filtered_mn_winnings = merged_mn_df.query(
-            f"Rank == 1 and Month == '{st.session_state['latest_mn']}'").reset_index()
+            f"Rank == 1 and Month in {st.session_state['latest_mn']}").reset_index()
         filtered_mn_winnings['total'] = 460 / filtered_mn_winnings['Count']
         mn_winnings = filtered_mn_winnings['total'].sum()
 
@@ -229,7 +233,7 @@ with _wk_mnth:
     merged_gw_winnings_final = merged_gw_winnings_df.groupby('Player')['total'].sum().reset_index()
 
     merged_mn_winnings_df.loc[(merged_mn_winnings_df['Rank'] == 1)
-                              & (merged_mn_winnings_df['Month'] == f"{st.session_state['latest_mn']}"), 'total'] \
+                              & (merged_mn_winnings_df['Month'] in f"{st.session_state['latest_mn']}"), 'total'] \
         = 460 / merged_mn_winnings_df['Count']
 
     merged_mn_winnings_final = merged_mn_winnings_df.groupby('Player')['total'].sum().reset_index()
