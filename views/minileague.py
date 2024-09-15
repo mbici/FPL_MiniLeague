@@ -57,14 +57,17 @@ css = '''
 # which is used while populating the winnings across multiple sections of this page.
 # Basically if the current GW and/or Month is not complete then it is not considered while calculating winnings
 if 'gw_status' not in st.session_state:
+    cgwk = gwk.get_recent_completed_gameweek()[0]
     st.session_state['gw_status'] = gwk.get_recent_completed_gameweek()[1]
     if st.session_state['gw_status']:
-        st.session_state['latest_gw'] = gwk.get_recent_completed_gameweek()[0]
+        st.session_state['latest_gw'] = cgwk  # gwk.get_recent_completed_gameweek()[0]
     else:
-        st.session_state['latest_gw'] = gwk.get_recent_completed_gameweek()[0] - 1
+        st.session_state['latest_gw'] = cgwk - 1  # gwk.get_recent_completed_gameweek()[0] - 1
 
     mnths = gwk.get_phases()
     mnths_lst = ['August']
+    mnths_lst_slider = ['August']
+
     st.session_state['latest_mn_last_gw'] = gwk.get_till_latest_phase()[1][1]
     # if ((not gwk.get_recent_completed_gameweek()[1]
     #      and st.session_state['latest_mn_last_gw'] == gwk.get_recent_completed_gameweek()[0]) or
@@ -72,8 +75,11 @@ if 'gw_status' not in st.session_state:
     for k, v in mnths.items():
         if k != 'Overall' and v[0] <= st.session_state['latest_gw']:
             mnths_lst.append(k)
+        if k != 'Overall' and v[0] <= cgwk:
+            mnths_lst_slider.append(k)
             # st.session_state['latest_mn'] = gwk.get_till_latest_phase()[0]
     st.session_state['latest_mn'] = mnths_lst
+    st.session_state['latest_mn_slider'] = mnths_lst_slider
 
 
 def data_refresh():
@@ -280,7 +286,8 @@ with _wk_mnth:
         st.subheader('Monthly Ranking', anchor=False)
         option1 = st.select_slider("Select Month",
                                    options=['August', 'September', 'October', 'November', 'December', 'January',
-                                            'February', 'March', 'April', 'May'], value=st.session_state['latest_mn'][-1])
+                                            'February', 'March', 'April', 'May'],
+                                   value=st.session_state['latest_mn_slider'][-1])
 
         mn_data_option = mn_data.loc[mn_data['Month'] == option1].sort_values(by=['Rank'])
         # mn_data_option.iloc[0, 2] = '🏆'
