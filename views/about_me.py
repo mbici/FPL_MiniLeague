@@ -37,27 +37,28 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.divider()
-rbtn, dd = st.columns([1, 7])
 
-# Section for refresh button which will refresh the dataset in the sheets and update the cached info in the app
-with rbtn:
-    is_clicked = st.button('Refresh Data')
-    if is_clicked:
-        with st.spinner('In-Progress......'):
-            st.cache_data.clear()
-            now = pd.DataFrame({'DataAsOf': [(datetime.utcnow() + timedelta(minutes=330)).strftime("%Y-%m-%d %H:%M:%S")]})
-            rd.refGw()
-            gs.update_data(wksheet='DataDate', df=now)
+deadline = gwk.get_upcoming_deadline()
 
-# Section to display the latest date for which the data is present in the app
-with dd:
-    dataDate = gs.data_load(wksheet='DataDate', cols=['DataAsOf'])
-    latest_gw = gwk.get_recent_completed_gameweek()
-    gw_state = str(latest_gw[0]) + ' ' + {latest_gw[1] == False: 'In-Progress', latest_gw[1] == True: 'Complete'}.get(True)
+dataDate = gs.data_load(wksheet='DataDate', cols=['DataAsOf'])
+latest_gw = gwk.get_recent_completed_gameweek()
+gw_state = str(latest_gw[0]) + ' ' + {latest_gw[1] == False: 'In-Progress', latest_gw[1] == True: 'Complete'}.get(True)
 
-    st.markdown(f"<p class='st-emotion-cache-sesqrs'>Data as of : "
-                f"{dataDate.loc[0, ['DataAsOf']].to_string(index=False)} === Gameweek {gw_state}</p>",
+st.markdown(f"<p class='st-emotion-cache-sesqrs'>Upcoming Deadline => {deadline}</p>", unsafe_allow_html=True)
+st.markdown(f"<p class='st-emotion-cache-sesqrs'>"
+                f"Gameweek {gw_state} (Last Refreshed : {dataDate.loc[0, ['DataAsOf']].to_string(index=False)})</p>",
                 unsafe_allow_html=True)
+st.write('\n')
+
+is_clicked = st.button('Refresh Data')
+if is_clicked:
+    with st.spinner('In-Progress......'):
+        st.cache_data.clear()
+        now = pd.DataFrame({'DataAsOf': [(datetime.utcnow() + timedelta(minutes=330)).strftime("%Y-%m-%d %H:%M:%S")]})
+        rd.refGw()
+        gs.update_data(wksheet='DataDate', df=now)
+
+st.divider()
 
 st.write('\n')
 

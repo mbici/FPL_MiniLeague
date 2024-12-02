@@ -21,6 +21,21 @@ def get_gameweek_data():
     return data
 
 
+def get_upcoming_deadline():
+    """
+    Get the deadline time for upcoming gameweek
+    :return: deadline in IST timestamp
+    """
+
+    gameweeks = get_gameweek_data()['events']
+    gw_df = pd.DataFrame.from_records(gameweeks).sort_values(by=['id'], ascending=True)
+
+    now = datetime.utcnow()
+
+    for index, row in gw_df.iterrows():
+        if datetime.strptime(row['deadline_time'], '%Y-%m-%dT%H:%M:%SZ') > now:
+            return datetime.strptime(row['deadline_time'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(minutes=330)
+
 def get_recent_completed_gameweek():
     """
     Get the most recent gameweek's ID & it's status.
