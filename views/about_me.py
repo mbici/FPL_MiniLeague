@@ -46,7 +46,8 @@ gw_state = str(latest_gw[0]) + ' ' + {latest_gw[1] == False: 'In-Progress', late
 
 st.markdown(f"<p class='st-emotion-cache-sesqrs'>Gameweek {str(latest_gw[0]+1)} Deadline => {deadline}</p>", unsafe_allow_html=True)
 st.markdown(f"<p class='st-emotion-cache-sesqrs'>"
-                f"Gameweek {gw_state} (Last Refreshed : {dataDate.loc[0, ['DataAsOf']].to_string(index=False)})</p>",
+                f"Gameweek {gw_state} (Last Refreshed : "
+                    f"{dataDate.loc[0, ['DataAsOf']].strftime('%Y-%m-%d %H:%M:%S').to_string(index=False)})</p>",
                 unsafe_allow_html=True)
 st.write('\n')
 
