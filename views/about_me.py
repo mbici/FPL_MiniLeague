@@ -44,7 +44,7 @@ dataDate = gs.data_load(wksheet='DataDate', cols=['DataAsOf'])
 latest_gw = gwk.get_recent_completed_gameweek()
 gw_state = str(latest_gw[0]) + ' ' + {latest_gw[1] == False: 'In-Progress', latest_gw[1] == True: 'Complete'}.get(True)
 
-st.markdown(f"<p class='st-emotion-cache-sesqrs'>Upcoming Deadline => {deadline}</p>", unsafe_allow_html=True)
+st.markdown(f"<p class='st-emotion-cache-sesqrs'>Gameweek {str(latest_gw[0]+1)} Deadline => {deadline}</p>", unsafe_allow_html=True)
 st.markdown(f"<p class='st-emotion-cache-sesqrs'>"
                 f"Gameweek {gw_state} (Last Refreshed : {dataDate.loc[0, ['DataAsOf']].to_string(index=False)})</p>",
                 unsafe_allow_html=True)
