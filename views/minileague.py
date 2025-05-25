@@ -254,9 +254,10 @@ with _wk_mnth:
     fourth = ovr_data.loc[3, ['Player']].to_string(index=False)
 
     gweek = gwk.get_recent_completed_gameweek()[0]
+    gweekStatus = gwk.get_recent_completed_gameweek()[1]
 
     # Consider the overall winnings in calculation only during and after gameweek 38
-    if gweek == 38:
+    if gweek == 38 and gweekStatus:
         merged_mn_winnings_final.loc[merged_mn_winnings_final['Player'] == first, 'Winnings'] += 7200
         merged_mn_winnings_final.loc[merged_mn_winnings_final['Player'] == second, 'Winnings'] += 4500
         merged_mn_winnings_final.loc[merged_mn_winnings_final['Player'] == third, 'Winnings'] += 3060
