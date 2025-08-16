@@ -291,7 +291,7 @@ with tab_ovr:
 
         # Overall Standings data to be shown with single row selection feature enabled and store in event variable
         event = st.dataframe(
-            ovr_data.style.map(lambda _: "background-color: Teal;", subset=([0, 1, 2, 3], slice(None))),
+            ovr_data.style.applymap(lambda _: "background-color: Teal;", subset=([0, 1, 2, 3], slice(None))),
             hide_index=True,  # use_container_width=True,
             column_config={'Rank': st.column_config.Column(width='small'),
                         'Player': st.column_config.Column(width='large'),
