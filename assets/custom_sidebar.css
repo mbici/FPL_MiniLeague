@@ -1,0 +1,43 @@
+/* Custom font for sidebar and page title */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;700&display=swap');
+
+/* Sidebar font and background */
+section[data-testid="stSidebar"] {
+    font-family: 'Montserrat', 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #305c5c 0%, #414345 100%);
+    color: #305c5c;
+}
+
+/* Sidebar item font and hover */
+section[data-testid="stSidebar"] .css-1wvake5, /* nav item */
+section[data-testid="stSidebar"] .css-1v0mbdj { /* nav item alt */
+    font-family: 'Montserrat', 'Roboto', sans-serif;
+    font-size: 1.1em;
+    padding: 0.5em 1em;
+    border-radius: 8px;
+    margin-bottom: 0.2em;
+    transition: background 0.2s, color 0.2s;
+}
+
+section[data-testid="stSidebar"] .css-1wvake5:hover, 
+section[data-testid="stSidebar"] .css-1v0mbdj:hover {
+    background: #4CAF50;
+    color: #fff;
+}
+
+/* Highlight selected nav item */
+section[data-testid="stSidebar"] .css-1wvake5[aria-selected="true"],
+section[data-testid="stSidebar"] .css-1v0mbdj[aria-selected="true"] {
+    background: #81c784;
+    color: #FFD600; /* Bright yellow */
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(76,175,80,0.15);
+}
+
+/* Page title font */
+h1, .stApp h1 {
+    font-family: 'Montserrat', 'Roboto', sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px;
+    color: #232526;
+}

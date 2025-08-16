@@ -1,15 +1,20 @@
 [theme]
 # Primary accent color for interactive elements.
-primaryColor = "#305c5c" #"#d33682"
+primaryColor = "#4CAF50"  # Vibrant green for highlights and buttons
 
 # Background color for the main content area.
-backgroundColor = "#002b36"
+backgroundColor = "#232526"  # Deep gray for main background
 
 # Background color used for the sidebar and most interactive widgets.
-secondaryBackgroundColor = "#586e75"   #
+secondaryBackgroundColor = "#305c5c"  # Teal/greenish for sidebar
 
 # Color used for almost all text.
-textColor = "#ffff"
+textColor = "#f2f2f2"  # Light gray for high contrast
+
+# Optional: Widget and error colors for a more cohesive palette
+# successColor = "#81c784"
+# warningColor = "#ffb300"
+# errorColor = "#e57373"
 
 [client]
 toolbarMode = "minimal"

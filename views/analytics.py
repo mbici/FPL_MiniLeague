@@ -8,9 +8,9 @@ from streamlit import session_state as session_state
 import Utils.gsheet_conn as gs
 import altair as alt
 
-lg = league(140708)
+lg = league(282978)
 
-st.markdown('<h1 style="color:#33ff33;font-size:60px;background-image:linear-gradient(45deg, #1A512E, #63A91F);"'
+st.markdown('<h1 style="color:#33ff33;font-size:60px;background-image:linear-gradient(45deg, #1A512E, #63A91F);font-family:Montserrat;text-align:left;padding:20px;border-radius:10px;"'
             '>Manager Performance - Analysis</h1>', unsafe_allow_html=True)
 st.divider()
 
