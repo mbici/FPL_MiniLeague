@@ -1,6 +1,11 @@
 import streamlit as st
+from pathlib import Path
 
 st.set_page_config(layout="wide")
+
+# --- CUSTOM CSS INJECTION ---
+with open("assets/custom_sidebar.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # --- PAGE SETUP ---
 about_page = st.Page(
@@ -19,12 +24,17 @@ analytics = st.Page(
     title='Manager Statistics',
     icon=':material/analytics:'
 )
+myspace = st.Page(
+    'views/myspace.py',
+    title='My Space',
+    icon=':material/groups:',
+)
 
 # --- NAVIGATION SETUP [WITH SECTIONS]---
 pg = st.navigation(
     {
         "Welcome": [about_page],
-        "Menu": [league, analytics],
+        "Menu": [league, analytics, myspace],
     }
 )
 

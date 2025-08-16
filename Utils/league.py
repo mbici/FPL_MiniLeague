@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.WARNING)
 
 
 class league:
-    def __init__(self, leagueId=140708):
+    def __init__(self, leagueId=282978):
         self.leagueId = leagueId
         self.base_url = p.base_url
 
@@ -19,7 +19,7 @@ class league:
 
         connect = {}
         session = requests.session()
-        league_url = f'{self.base_url}leagues-classic/{self.leagueId}/standings'  # 288563,331953,140708
+        league_url = f'{self.base_url}leagues-classic/{self.leagueId}/standings'  # 288563,331953,140708,282978
 
         try:
             connect = session.get(league_url).json()
@@ -91,7 +91,7 @@ class league:
 
 
 if __name__ == '__main__':
-    t = league(140708)
+    t = league(282978)
 
     print(t.get_league_name())
     print('------------------------------------------------')

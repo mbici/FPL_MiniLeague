@@ -38,21 +38,32 @@ def get_upcoming_deadline():
 
 def get_recent_completed_gameweek():
     """
-    Get the most recent gameweek's ID & it's status.
-    :return: Gameweek number and status
+    Get the most recent gameweek
+    :return: List with gameweek ID and its status (True if completed, False if in-progress)
     """
 
     gameweeks = get_gameweek_data()['events']
     gw_df = pd.DataFrame.from_records(gameweeks).sort_values(by=['id'], ascending=False)
 
-    now = datetime.utcnow()  # + timedelta(days=45)
+    now = datetime.utcnow()
 
-    for index, row in gw_df.iterrows():
-        if datetime.strptime(row['deadline_time'], '%Y-%m-%dT%H:%M:%SZ') < now:
-            val = str(row['id']) + ' - ' + row['deadline_time'] + ' - ' + str(row['finished'])
-            logging.info('Gameweek Details  ----> ' + val)
+    try:
+        for index, row in gw_df.iterrows():
+            if datetime.strptime(row['deadline_time'], '%Y-%m-%dT%H:%M:%SZ') < now:
+                logging.info('==========  Gameweek Details  ==========')
+                logging.info('Gameweek ID: ' + str(row['id']))
+                logging.info('Deadline Time: ' + str(datetime.strptime(row['deadline_time'], '%Y-%m-%dT%H:%M:%SZ')))
+                logging.info('Gameweek Status: ' + str(row['finished']))
+                logging.info('========================================')
+                # Return the gameweek ID and its status
+                return [row['id'], row['finished']]
+    
+    except Exception as e:
+        logging.info('Error occurred: ' + str(e))
 
-            return [row['id'], row['finished']]
+    # If no completed gameweek found, return default
+    logging.info('No completed gameweek found before ' + str(now))
+    return [0, False]
 
 
 def get_phases():
@@ -96,10 +107,10 @@ def get_ongoing_month():
     gw = get_recent_completed_gameweek()
     mn = get_till_latest_phase()
 
-    if (gw[0] == mn[1][1] and not gw[1]) or gw[0] < mn[1][1]:
+    if mn is not None and ((gw[0] == mn[1][1] and not gw[1]) or gw[0] < mn[1][1]):
         return mn[0]
     else:
-        return 'x'
+        return datetime.utcnow().strftime('%B')
 
 
 def get_gw_data(player, gw) -> dict:
@@ -127,6 +138,9 @@ def get_gw_data(player, gw) -> dict:
 
 
 if __name__ == '__main__':
-    print(get_recent_completed_gameweek())
-    print(get_phases())
-    print(get_till_latest_phase())
+    print('\n', '*'*100, '\n', '------Upcoming Deadline: ', get_upcoming_deadline(), '------', '\n', '*'*100, '\n')
+    print('\n', '*'*100, '\n', '------Recent completed gameweek: ', get_recent_completed_gameweek(), '------', '\n', '*'*100, '\n')
+    print('\n', '*'*100, '\n', '------Phases: ', get_phases(), '------', '\n', '*'*100, '\n')
+    print('\n', '*'*100, '\n', '------Till Latest Phase: ', get_till_latest_phase(), '------', '\n', '*'*100, '\n')
+    print('\n', '*'*100, '\n', '------Ongoing Month: ', get_ongoing_month(), '------', '\n', '*'*100, '\n')
+    print(get_gw_data({'Id': 777321, 'Team': 'Roger XI', 'Player': 'Himanshu Masani'}, 38))

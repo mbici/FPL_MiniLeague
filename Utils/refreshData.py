@@ -3,7 +3,7 @@ from Utils.league import *
 import Utils.gameweek as gwk
 
 
-lg = league(140708)
+lg = league(282978)
 
 
 def append_rows(sheet_name, wksheet_name, val):

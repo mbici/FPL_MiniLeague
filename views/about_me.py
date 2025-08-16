@@ -5,8 +5,8 @@ from Utils.league import *
 import Utils.gsheet_conn as gs
 import Utils.gameweek as gwk
 
-st.markdown(f'<h1 style="color:#33ff33;font-size:60px;background-image:linear-gradient(45deg, #1A512E, #63A91F);"'
-            f'>FPL Mini-League Details App</h1>', unsafe_allow_html=True)
+st.markdown(f'<h1 style="color:#33ff33;font-size:60px;background-image:linear-gradient(45deg, #1A512E, #63A91F);font-family:Montserrat;text-align:left;padding:20px;border-radius:10px;"'
+            f'>Fantasy Kings 2025-26</h1>', unsafe_allow_html=True)
 
 # CSS styles for various elements on the screen
 st.html(
@@ -44,11 +44,22 @@ dataDate = gs.data_load(wksheet='DataDate', cols=['DataAsOf'])
 latest_gw = gwk.get_recent_completed_gameweek()
 gw_state = str(latest_gw[0]) + ' ' + {latest_gw[1] == False: 'In-Progress', latest_gw[1] == True: 'Complete'}.get(True)
 
-st.markdown(f"<p class='st-emotion-cache-sesqrs'>"
-                f"Gameweek {gw_state} (Last Refreshed => "
-                    f"{datetime.strptime(dataDate.loc[0, ['DataAsOf']].to_string(index=False), '%m/%d/%Y %H:%M:%S')})</p>",
-                unsafe_allow_html=True)
-st.markdown(f"<p class='st-emotion-cache-sesqrs'>Gameweek {str(latest_gw[0]+1)} Deadline => {deadline}</p>", unsafe_allow_html=True)
+# Custom visual block for Gameweek info
+st.markdown(f"""
+<div style='background: #333; border-radius: 12px; padding: 18px 24px; margin-bottom: 10px; display: flex; align-items: center;'>
+    <img src='https://img.icons8.com/color/48/football2.png' style='width:40px;height:40px;margin-right:18px;' alt='GW'/>
+    <div>
+        <span style='font-size:22px; color:#FFD700; font-weight:600;'>Gameweek {gw_state}</span><br>
+        <span style='font-size:15px; color:#FFD700;'>Last Data Refresh: <b style='color:#fff;'>{datetime.strptime(dataDate.loc[0, ['DataAsOf']].to_string(index=False), '%m/%d/%Y %H:%M:%S')}</b></span>
+    </div>
+</div>
+<div style='background: #333; border-radius: 12px; padding: 14px 24px; margin-bottom: 18px; display: flex; align-items: center;'>
+    <img src='https://img.icons8.com/color/48/alarm.png' style='width:40px;height:40px;margin-right:18px;' alt='Deadline'/>
+    <span style='font-size:22px; color:#FFD700; font-weight:600;'>Gameweek {str(latest_gw[0]+1)} <b>Deadline</b>: <span style='color:#fff;'>{deadline}</span></span>
+</div>
+""", unsafe_allow_html=True)
+
+
 st.write('\n')
 
 is_clicked = st.button('Refresh Data')
@@ -98,7 +109,7 @@ with _help:
               each gameweek's rank and points earned]
         """, unsafe_allow_html=True)
 
-lg = league(140708)
+lg = league(282978)
 lg_name = lg.get_league_name()
 
 st.divider()
