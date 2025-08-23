@@ -4,10 +4,11 @@ import requests
 import pandas as pd
 from Params import params as p
 import logging
+import streamlit as st
 
 logging.basicConfig(level=logging.INFO)
 
-
+@st.cache_data()
 def get_gameweek_data():
     """
     Function to get all gameweek's data
@@ -76,7 +77,8 @@ def get_phases():
     gw = {}
 
     for phase in phases:
-        gw[phase['name']] = [phase['start_event']] + [phase['stop_event']]
+        if phase['name'] != 'Overall':
+            gw[phase['name']] = [phase['start_event']] + [phase['stop_event']]
 
     return gw
 
@@ -92,7 +94,7 @@ def get_till_latest_phase():
 
     try:
         for (k, v) in phase.items():
-            if v[0] <= gw[0] <= v[1] and k != 'Overall':
+            if gw[0] > v[1] or (gw[0] == v[1] and gw[1]):
                 return k, v
 
     except Exception as e:

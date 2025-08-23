@@ -3,6 +3,8 @@ import streamlit as st
 import Utils.gsheet_conn as gs
 import Utils.gameweek as gwk
 from Utils.league import *
+from fpl_streamlit_app import deadline, latest_gw, completed_months
+import Utils.standings as stg
 
 global ovr_data, gw_data, mn_data
 
@@ -196,61 +198,24 @@ button:focus {
 </style>
 """, unsafe_allow_html=True)
 
-# Function to refresh data from the googlesheets containing the GW, Monthly and Overall standings and points
-def data_refresh():
-    """
-    Function to refresh data from the googlesheets containing the GW, Monthly and Overall standings and points
-    :return:
-    """
-    global ovr_data, gw_data, mn_data
-
-    # Read data from various sheets into the globally defined variables. This data is for overall, GW and monthly
-    ovr_data = gs.data_load('Overall', ['Rank', 'Player', 'Points', 'Last_Rank']) \
-        .astype({'Rank': 'int64', 'Last_Rank': 'int64', 'Points': 'int64'})
-    gw_data = gs.data_load('Gameweek', ['Player', 'Gross', 'Transfer', 'Points', 'Rank', 'Gameweek']) \
-        .astype({'Rank': 'int64', 'Points': 'int64', 'Gross': 'int64', 'Transfer': 'int64'})
-    mn_data = gs.data_load('Monthly', ['Player', 'Points', 'Rank', 'Month']) \
-        .astype({'Rank': 'int64', 'Points': 'int64'})
-
-mths_lst_winning = ['0']
-# Checking for current GW and Month if complete or not and accordingly setting up a session_state param,
-# which is used while populating the winnings across multiple sections of this page.
-# If the current GW and/or Month is not complete then it is not considered while calculating winnings
 if 'gw_status' not in st.session_state:
-    cgwk = gwk.get_recent_completed_gameweek()[0]
-    st.session_state['gw_status'] = gwk.get_recent_completed_gameweek()[1]
-    if st.session_state['gw_status']:
-        st.session_state['latest_gw'] = cgwk  # gwk.get_recent_completed_gameweek()[0]
-    else:
-        st.session_state['latest_gw'] = cgwk - 1  # gwk.get_recent_completed_gameweek()[0] - 1
+    st.session_state['latest_gw'] = latest_gw[0]
+    st.session_state['gw_status'] = latest_gw[1]
+    st.session_state['completed_months'] = completed_months
 
-    mnths = gwk.get_phases()
-    mnths_lst = ['August']
-    mnths_lst_slider = ['August']
+gw_winnings = mn_winnings = 0.0
+# Refresh data from Google Sheets
+ovr_data, gw_data, mn_data =  stg.data_refresh()
 
-    st.session_state['latest_mn_last_gw'] = gwk.get_till_latest_phase()[1][1]
-
-    for k, v in mnths.items():
-        if k != 'Overall' and v[1] <= st.session_state['latest_gw']:
-            mnths_lst.append(k)
-            mths_lst_winning.append(k)
-        if k != 'Overall' and v[0] <= cgwk:
-            mnths_lst_slider.append(k)
-    st.session_state['latest_mn'] = mnths_lst
-    st.session_state['latest_mn_slider'] = mnths_lst_slider
+# Calculate winnings data for Gameweek and Monthly
+gw_winning_df, mn_winnings_df = stg.winnings_data(gw_data, mn_data)
+gw_wins_agg = gw_winning_df.groupby('Player')['Total'].sum().reset_index()
+mn_wins_agg = mn_winnings_df.groupby('Player')['Total'].sum().reset_index()
 
     # ovr_data.loc[0, ['Rank']] = '🥇'
     # ovr_data.loc[1, ['Rank']] = '🥈'
     # ovr_data.loc[2, ['Rank']] = '🥉'
     # ovr_data.loc[3, ['Rank']] = '🏅'
-
-
-data_refresh()
-
-# Two containers for Overall Standings & Weekly, Monthly and Winnings data
-# _overall = st.container()
-# _wk_mnth = st.container(border=True)
-
 
 def highlight_ranker(row):
     """
@@ -268,6 +233,89 @@ def top_row(row):
     :return: value for pandas' style apply method
     """
     return ['font-size: 100pt'] * len(row) if row.Rank == 1 else ['font-size: '] * len(row)
+
+
+def render_grid(df: pd.DataFrame, column_order: list | None = None, height: int = 780) -> str:
+    """
+    Render a pandas DataFrame as a visually appealing HTML grid with soothing colors.
+    Rows where Rank == 1 will be enlarged and highlighted.
+    """
+    # Determine columns to show
+    cols = column_order if column_order is not None else list(df.columns)
+
+    # CSS for the grid
+    grid_css = '''
+    <style>
+    .fpl-grid { align-items:left; display:block; width:100%; max-height: __HEIGHT__px; overflow:auto; padding:8px; box-sizing:border-box; }
+    .fpl-grid .header, .fpl-grid .row { align-items:left;  display:grid; grid-template-columns: 80px 1fr 120px 120px 120px; gap:10px; padding:2px 4px; border-radius:10px; }
+    .fpl-grid .header { position:sticky; top:0; background: linear-gradient(90deg, rgba(50,120,60,0.95), rgba(50,200,110,0.95)); color:#f3c911; font-weight:700; z-index:5; box-shadow:0 4px 12px rgba(12,70,20,0.08);text-align:left;}    
+    .fpl-grid .header .cell { font-size: 1.48rem; color:#ffffe0; padding:10px 4px;}
+    .fpl-grid .row { background: linear-gradient(180deg, rgba(250,250,248,0.9), rgba(240,248,240,0.9)); margin:8px 0; transition:transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;}
+    .fpl-grid .row:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(18,58,18,0.06);}    
+    .fpl-grid .cell { padding:6px 4px; color:#0b2b14; font-size:1.02rem; text-align:left; }
+    .fpl-grid .player { text-align:left; font-weight:500; font-size:1.02rem; }
+    .fpl-grid .rank { text-align:left; font-weight:500; color:#0b3620; font-size:1.02rem; }
+    .fpl-grid .points { text-align:left; font-weight:500; color:#1a3e20; font-size:1.02rem; }
+    .fpl-grid .transfer, .fpl-grid .gross { text-align:left; font-weight:500; font-size:1.02rem; }
+    .fpl-grid .winnings, { text-align:center; font-weight:500; font-size:1.02rem; }
+
+    /* highlighted (top) row styling */
+    .fpl-grid .row.highlight { text-align:left; transform: scale(1.05); background: linear-gradient(90deg, #f3c901, #f3c901); box-shadow: 0 18px 46px rgba(33,150,83,0.12); }
+    .fpl-grid .row.highlight .player { font-weight:800;font-size:1.48rem; text-align:center;}
+    .fpl-grid .row.highlight .rank { font-weight:800;font-size:1.48rem; text-align:right;}
+    .fpl-grid .row.highlight .gross { font-weight:800;font-size:1.48rem; text-align:left;}
+    .fpl-grid .row.highlight .transfer { font-weight:800;font-size:1.48rem; text-align:left;}
+    .fpl-grid .row.highlight .points { font-weight:800;font-size:1.48rem; text-align:left;}
+
+    /* responsive fallback for narrow screens */
+    @media (max-width:720px) {
+        .fpl-grid .header, .fpl-grid .row { grid-template-columns: 60px 1fr 80px; }
+        .fpl-grid .gross, .fpl-grid .transfer { display:none; }
+    }
+    </style>
+    '''.replace('__HEIGHT__', str(height))
+
+    # Build header and rows
+    header_cells = ''.join([f"<div class='cell'>{c}</div>" for c in cols])
+    rows_html = ''
+    for _, r in df.iterrows():
+        cls = 'row'
+        try:
+            if int(r.get('Rank', 0)) == 1:
+                cls = 'row highlight'
+        except Exception:
+            pass
+
+        cell_html = ''
+        for c in cols:
+            value = r.get(c, '')
+            cell_class = 'cell'
+            if str(c).lower() == 'player':
+                cell_class += ' player'
+            if str(c).lower() == 'rank':
+                cell_class += ' rank'
+            if str(c).lower() == 'points':
+                cell_class += ' points'
+            if str(c).lower() == 'transfer':
+                cell_class += ' transfer'
+            if str(c).lower() == 'gross':
+                cell_class += ' gross'
+            if str(c).lower() == 'winnings':
+                cell_class += ' winnings'
+
+            cell_html += f"<div class='{cell_class}'>{'' if pd.isna(value) else value}</div>"
+
+        rows_html += f"<div class='{cls}'>{cell_html}</div>"
+
+    html = f"""
+    {grid_css}
+    <div class='fpl-grid' role='table'>
+      <div class='header'>{header_cells}</div>
+      {rows_html}
+    </div>
+    """
+    return html
+
 
 # Show formatted title section for the page
 st.markdown(f'<h1 style="color:#33ff33;font-size:60px;background-image:linear-gradient(45deg, #1A512E, #63A91F);font-family:Montserrat;text-align:left;padding:20px;border-radius:10px;"'
@@ -302,62 +350,42 @@ with tab_ovr:
         )
 
         selection = event.selection.rows
-        person = ovr_data.iloc[selection]['Player'].to_string(index=False)
-        personC = person.split(' ')[0].capitalize() + ' ' + person.split(' ')[1].capitalize()
+        person = ovr_data.iloc[selection]['Player'].to_string(index=False).split(' ')
+        personC = person[0].capitalize() + ' ' + person[1].capitalize()
 
         # In case the selection is None then a static text to be displayed above the widgets section else selected name
-        personC = {len(selection) == 0: '***Select a player***', len(selection) > 0: personC}.get(True)
+        if len(selection) > 0:
+            playerSelected = personC
+            gw_winnings = gw_winning_df.loc[gw_winning_df['Player'] == personC, 'Total'].sum()
+            mn_winnings = mn_winnings_df.loc[mn_winnings_df['Player'] == personC, 'Total'].sum()
+        else:
+            playerSelected = '***Select a player***'
 
-        # Below lines are basically filtering the gameweek and monthly dataframes for the selected manager name
-        # Then if the manager has attained rank #1 against any gameweek and/or month, it is considered
-        # to calculate the eventual winning amount till date for that manager, barring any ongoing month and/or gw
 
-        filtered_data_gw = gw_data.query("Player == '{0}'".format(person)).reset_index().sort_values('Gameweek')
-        filtered_data_mn = mn_data.query("Player == '{0}'".format(personC)).reset_index()
-
-        gw_data_rankers = gw_data[gw_data['Rank'] == 1].groupby('Gameweek').size().reset_index(name='Count') \
-            .sort_values('Gameweek')
-        mn_data_rankers = mn_data[mn_data['Rank'] == 1].groupby('Month').size().reset_index(name='Count')
-
-        merged_gw_df = pd.merge(filtered_data_gw, gw_data_rankers, on='Gameweek')
-        merged_mn_df = pd.merge(filtered_data_mn, mn_data_rankers, on='Month')
-
-        filtered_gw_winnings = merged_gw_df.query(
-            f"Rank == 1 and Gameweek<={st.session_state['latest_gw']}").reset_index()
-        filtered_gw_winnings['total'] = 300 / filtered_gw_winnings['Count']
-        gw_winnings = {filtered_gw_winnings['total'].sum()>0: filtered_gw_winnings['total'].sum(),
-                       filtered_gw_winnings['total'].sum() == 0: 0}.get(True)
-
-        filtered_mn_winnings = merged_mn_df.query(
-            f"Rank == 1 and Month in {mths_lst_winning}").reset_index()
-        filtered_mn_winnings['total'] = 530 / filtered_mn_winnings['Count']
-        mn_winnings = {filtered_mn_winnings['total'].sum()>0: filtered_mn_winnings['total'].sum(),
-                       filtered_mn_winnings['total'].sum() == 0: 0}.get(True)
-
-        # Metric Widgets section
+    # Metric Widgets section
     with mc:
         st.markdown(1 * "<br />", unsafe_allow_html=True)
-        st.markdown(f"<h4 style='text-align: center; color: white;'>{personC}</h4>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='text-align: center; color: white;'>{playerSelected}</h4>", unsafe_allow_html=True)
         st.subheader('', anchor=False, divider='rainbow')
         st.markdown(1 * "<br />", unsafe_allow_html=True)
 
-        if gw_winnings is not None:
-            st.markdown(f"""
-            <style>
-            {css}
-            </style>
-            """, unsafe_allow_html=True)
+        # if gw_winnings is not None:
+        st.markdown(f"""
+                    <style>
+                    {css}
+                    </style>
+                    """, unsafe_allow_html=True)
 
-            g, m = st.columns(2)
-            with g:
-                st.metric('Weekly Winnings', '₹ ' + str(gw_winnings))
+        g, m = st.columns(2)
+        with g:
+            st.metric('Weekly Winnings', '₹ ' + max(str(gw_winnings),'0'))
 
-            with m:
-                st.metric('Monthly Winnings', '₹ ' + str(mn_winnings))
+        with m:
+            st.metric('Monthly Winnings', '₹ ' + max(str(mn_winnings),'0'))
 
-            st.markdown(2 * "<br />", unsafe_allow_html=True)
+        st.markdown(2 * "<br />", unsafe_allow_html=True)
 
-            st.metric('Rank', {len(selection) > 0: ovr_data.loc[ovr_data['Player'] == personC, 'Rank']
+        st.metric('Rank', {len(selection) > 0: ovr_data.loc[ovr_data['Player'] == personC, 'Rank']
                     .to_string(index=False)}.get(True),
                     delta=int({len(selection) > 0: ovr_data.loc[ovr_data['Player'] == personC, 'Last_Rank']
                     .to_string(index=False)}.get(True, 0)) -
@@ -365,90 +393,78 @@ with tab_ovr:
                     .to_string(index=False)}.get(True, 0)),
                     delta_color='normal')
 
-    st.write('\n')
-    st.write('\n')
-    st.write('\n')
+    st.write('\n'*3)
+    # st.write('\n')
+    # st.write('\n')    
 
-
-# Weekly, Monthly and Winnings table section
-# Below few lines are to calculate the winnings for each player till the latest completed gameweek and month
-merged_gw_winnings_df = pd.merge(gw_data, gw_data_rankers, on='Gameweek')
-merged_mn_winnings_df = pd.merge(mn_data, mn_data_rankers, on='Month')
-
-merged_gw_winnings_df.loc[(merged_gw_winnings_df['Rank'] == 1)
-                            & (merged_gw_winnings_df['Gameweek'] <= st.session_state['latest_gw']), 'total'] \
-    = 300 / merged_gw_winnings_df['Count']
-
-merged_gw_winnings_final = merged_gw_winnings_df.groupby('Player')['total'].sum().reset_index()
-
-merged_mn_winnings_df.loc[(merged_mn_winnings_df['Rank'] == 1)
-                            & (merged_mn_winnings_df['Month'].isin(mths_lst_winning)), 'total'] \
-    = 530 / merged_mn_winnings_df['Count']
-
-merged_mn_winnings_final = merged_mn_winnings_df.groupby('Player')['total'].sum().reset_index()
-merged_mn_winnings_final = pd.concat([merged_mn_winnings_final, merged_gw_winnings_final], ignore_index=True)
-merged_mn_winnings_final = merged_mn_winnings_final.groupby(merged_mn_winnings_final['Player'])['total'] \
-    .sum().reset_index()
-merged_mn_winnings_final.rename(columns={'total': 'Winnings'}, inplace=True)
-
-first = ovr_data.loc[0, ['Player']].to_string(index=False)
-second = ovr_data.loc[1, ['Player']].to_string(index=False)
-third = ovr_data.loc[2, ['Player']].to_string(index=False)
-fourth = ovr_data.loc[3, ['Player']].to_string(index=False)
-
-gweek = gwk.get_recent_completed_gameweek()[0]
-gweekStatus = gwk.get_recent_completed_gameweek()[1]
-
-# Consider the overall winnings in calculation only during and after gameweek 38
-if gweek == 38 and gweekStatus:
-    merged_mn_winnings_final.loc[merged_mn_winnings_final['Player'] == first, 'Winnings'] += 7200
-    merged_mn_winnings_final.loc[merged_mn_winnings_final['Player'] == second, 'Winnings'] += 4500
-    merged_mn_winnings_final.loc[merged_mn_winnings_final['Player'] == third, 'Winnings'] += 3060
-    merged_mn_winnings_final.loc[merged_mn_winnings_final['Player'] == fourth, 'Winnings'] += 1500
-
-merged_mn_winnings_final.sort_values(by=['Winnings'], inplace=True, ascending=False)
-
-    # gwr, mnr, win = st.columns([2, 1, 1])
 with tab_gw:
     # Gameweek Ranking Table section
-    # with gwr:
     st.subheader('Gameweek Ranking', anchor=False)
-    option = st.slider("Select Gameweek", 1, 38, gweek, label_visibility='collapsed')
+    option = st.slider("Select Gameweek", 1, 38, latest_gw[0], label_visibility='collapsed')
     gw_data_option = gw_data.loc[gw_data['Gameweek'] == option].sort_values(by=['Rank'])
-    gw_data_option = gw_data_option.style.apply(highlight_ranker, axis=1).apply(top_row, axis=1)
     st.write('\n')
     st.write('\n')
 
-    st.dataframe(
-        gw_data_option,
-        hide_index=True,
-        use_container_width=True,
-        column_config={'PlayerId': None},
-        column_order=['Rank', 'Player', 'Gross', 'Transfer', 'Points'],
-        height=780
-    )
+    if gw_data_option.empty:
+        st.write('No data available for the selected gameweek.')
+    else:
+        # Render a custom HTML/CSS grid for a more pleasing visual
+        html = render_grid(gw_data_option[['Rank', 'Player', 'Gross', 'Transfer', 'Points']],
+                           column_order=['Rank', 'Player', 'Gross', 'Transfer', 'Points'],
+                           height=780)
+        st.markdown(html, unsafe_allow_html=True)
 
 # Monthly Ranking Table section
 with tab_mn:
+    ongoing_month = gwk.get_ongoing_month()
     st.subheader('Monthly Ranking', anchor=False)
     option1 = st.select_slider("Select Month", label_visibility='collapsed',
                                 options=['August', 'September', 'October', 'November', 'December', 'January',
                                         'February', 'March', 'April', 'May'],
-                                value=st.session_state['latest_mn_slider'][-1])
+                                value=ongoing_month if ongoing_month else 'August')
 
     mn_data_option = mn_data.loc[mn_data['Month'] == option1].sort_values(by=['Rank'])
     # mn_data_option.iloc[0, 2] = '🏆'
     st.write('\n')
     st.write('\n')
-    st.dataframe(mn_data_option.style.apply(highlight_ranker, axis=1).apply(top_row, axis=1),
-                    hide_index=True, use_container_width=True,
-                    column_order=['Rank', 'Player', 'Points'], height=780,
-                    column_config={'PlayerId': None}
-                    )
+    if mn_data_option.empty:
+        st.write('No data available for the selected month.')
+    else:
+        html = render_grid(mn_data_option[['Rank', 'Player', 'Points']],
+                           column_order=['Rank', 'Player', 'Points'],
+                           height=780)
+        st.markdown(html, unsafe_allow_html=True)
 
 # Winnings Table section
+wins_agg_final = pd.merge(gw_wins_agg, mn_wins_agg, on='Player', how='outer', suffixes=('_GW', '_MN'))
+wins_agg_final['Winnings'] = wins_agg_final['Total_GW'].fillna(0) + wins_agg_final['Total_MN'].fillna(0)
+wins_agg_final = wins_agg_final[['Player', 'Winnings']].sort_values(by='Winnings', ascending=False).reset_index(drop=True)
+wins_agg_final['#'] = wins_agg_final.index + 1
+
+first_four = ovr_data['Player'].iloc[:4].astype(str).str.strip().tolist()
+prizes = [7200, 4500, 3100, 1500]
+prize_map = dict(zip(first_four, prizes))
+
+# Consider the overall winnings in calculation only during and after gameweek 38
+if latest_gw[0] == 38 and latest_gw[1]:
+    # update existing winners
+    for player, prize in prize_map.items():
+        mask = wins_agg_final['Player'].astype(str).str.strip() == player
+        if mask.any():
+            wins_agg_final.loc[mask, 'Winnings'] = wins_agg_final.loc[mask, 'Winnings'] + prize
+
+    # re-sort and reset index after applying prizes
+    wins_agg_final = wins_agg_final.sort_values(by='Winnings', ascending=False).reset_index(drop=True)
+
 with tab_winnings:
     st.subheader('Total Winnings', anchor=False)
-    st.dataframe(merged_mn_winnings_final, hide_index=True, column_order=['Player', 'Winnings'], height=780,
-                    column_config={'Player': st.column_config.Column(width='medium'),
-                                'Winnings': st.column_config.Column(width='small')})
+    if len(wins_agg_final) == 0:
+        st.write('No winnings data available yet.')
+    else:
+        # st.dataframe(wins_agg_final, hide_index=True, column_order=['Player', 'Winnings'], height=780,
+        #             column_config={'Player': st.column_config.Column(width='medium'),
+        #                         'Winnings': st.column_config.Column(width='small')})
+        html = render_grid(wins_agg_final[['#', 'Player', 'Winnings']],
+                           column_order=['#', 'Player', 'Winnings'],
+                           height=780)
+        st.markdown(html, unsafe_allow_html=True)

@@ -3,7 +3,7 @@ import Utils.refreshData as rd
 import streamlit as st
 from Utils.league import *
 import Utils.gsheet_conn as gs
-import Utils.gameweek as gwk
+from fpl_streamlit_app import deadline, latest_gw
 
 st.markdown(f'<h1 style="color:#33ff33;font-size:60px;background-image:linear-gradient(45deg, #1A512E, #63A91F);font-family:Montserrat;text-align:left;padding:20px;border-radius:10px;"'
             f'>Fantasy Kings 2025-26</h1>', unsafe_allow_html=True)
@@ -38,10 +38,7 @@ st.markdown("""
 
 st.divider()
 
-deadline = gwk.get_upcoming_deadline()
-
 dataDate = gs.data_load(wksheet='DataDate', cols=['DataAsOf'])
-latest_gw = gwk.get_recent_completed_gameweek()
 gw_state = str(latest_gw[0]) + ' ' + {latest_gw[1] == False: 'In-Progress', latest_gw[1] == True: 'Complete'}.get(True)
 
 # Custom visual block for Gameweek info
@@ -75,7 +72,6 @@ st.divider()
 st.write('\n')
 
 _help = st.container(border=True)
-_mgrDetails = st.container(border=True)
 
 # Usage Guidelines
 with _help:
