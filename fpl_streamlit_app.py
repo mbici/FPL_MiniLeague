@@ -13,6 +13,7 @@ completed_months = gwk.get_till_latest_phase().keys() if gwk.get_till_latest_pha
 st.session_state['gw_id'] = latest_gw[0]
 st.session_state['gw_status'] = latest_gw[1]
 st.session_state['completed_months'] = completed_months
+st.session_state['deadline'] = deadline
 
 # --- CUSTOM CSS INJECTION ---
 with open("assets/custom_sidebar.css") as f:

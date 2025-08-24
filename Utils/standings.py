@@ -1,7 +1,7 @@
 import streamlit as st
 import Utils.gsheet_conn as gs
 import pandas as pd
-from fpl_streamlit_app import latest_gw, completed_months
+# from fpl_streamlit_app import latest_gw, completed_months
 
 # Function to refresh data from the googlesheets containing the GW, Monthly and Overall standings and points
 @st.cache_data()
@@ -29,8 +29,8 @@ def winnings_data(gw_data, mn_data):
     """
     
     #Calculatate the overall winnings
-    gw_data = gw_data[(gw_data.Gameweek < latest_gw[0]) | (gw_data.Gameweek == latest_gw[0] & latest_gw[1])]
-    mn_data = mn_data[mn_data.Month.isin(completed_months)]
+    gw_data = gw_data[(gw_data.Gameweek < st.session_state['gw_id']) | (gw_data.Gameweek == st.session_state['gw_id'] & st.session_state['gw_status'])]
+    mn_data = mn_data[mn_data.Month.isin(st.session_state['completed_months'])]
 
     gw_data_rankers = gw_data[gw_data['Rank'] == 1].groupby(['Gameweek', 'Rank']).size().reset_index(name='Count').sort_values('Gameweek')
     mn_data_rankers = mn_data[mn_data['Rank'] == 1].groupby(['Month', 'Rank']).size().reset_index(name='Count')
