@@ -3,7 +3,7 @@ import streamlit as st
 import Utils.gsheet_conn as gs
 import Utils.gameweek as gwk
 from Utils.league import *
-from fpl_streamlit_app import deadline, latest_gw, completed_months
+# from fpl_streamlit_app import deadline, latest_gw, completed_months
 import Utils.standings as stg
 import urllib.parse
 
@@ -199,10 +199,10 @@ button:focus {
 </style>
 """, unsafe_allow_html=True)
 
-if 'gw_status' not in st.session_state:
-    st.session_state['latest_gw'] = latest_gw[0]
-    st.session_state['gw_status'] = latest_gw[1]
-    st.session_state['completed_months'] = completed_months
+# if 'gw_status' not in st.session_state:
+#     st.session_state['latest_gw'] = st.session_state['gw_id']
+#     st.session_state['gw_status'] = st.session_state['gw_status']
+    # st.session_state['completed_months'] = st.session_state['completed_months']
 
 gw_winnings = mn_winnings = 0.0
 # Refresh data from Google Sheets
@@ -596,7 +596,7 @@ with tab_ovr:
 with tab_gw:
     # Gameweek Ranking Table section
     st.subheader('Gameweek Ranking', anchor=False)
-    option = st.slider("Select Gameweek", 1, 38, latest_gw[0], label_visibility='collapsed')
+    option = st.slider("Select Gameweek", 1, 38, st.session_state['gw_id'], label_visibility='collapsed')
     gw_data_option = gw_data.loc[gw_data['Gameweek'] == option].sort_values(by=['Rank'])
     st.write('\n')
     st.write('\n')
@@ -647,7 +647,7 @@ prizes = [7200, 4500, 3100, 1500]
 prize_map = dict(zip(first_four, prizes))
 
 # Consider the overall winnings in calculation only during and after gameweek 38
-if latest_gw[0] == 38 and latest_gw[1]:
+if st.session_state['gw_id'] == 38 and st.session_state['gw_status']:
     # update existing winners
     for player, prize in prize_map.items():
         mask = wins_agg_final['Player'].astype(str).str.strip() == player

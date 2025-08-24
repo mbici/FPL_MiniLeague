@@ -3,7 +3,7 @@ import Utils.refreshData as rd
 import streamlit as st
 from Utils.league import *
 import Utils.gsheet_conn as gs
-from fpl_streamlit_app import deadline, latest_gw
+# from fpl_streamlit_app import deadline, latest_gw
 
 st.markdown(f'<h1 style="color:#33ff33;font-size:60px;background-image:linear-gradient(45deg, #1A512E, #63A91F);font-family:Montserrat;text-align:left;padding:20px;border-radius:10px;"'
             f'>Fantasy Kings 2025-26</h1>', unsafe_allow_html=True)
@@ -39,7 +39,7 @@ st.markdown("""
 st.divider()
 
 dataDate = gs.data_load(wksheet='DataDate', cols=['DataAsOf'])
-gw_state = str(latest_gw[0]) + ' ' + {latest_gw[1] == False: 'In-Progress', latest_gw[1] == True: 'Complete'}.get(True)
+gw_state = str(st.session_state['gw_id']) + ' ' + {st.session_state['gw_status'] == False: 'In-Progress', st.session_state['gw_status'] == True: 'Complete'}.get(True)
 
 # Custom visual block for Gameweek info
 st.markdown(f"""
@@ -52,7 +52,7 @@ st.markdown(f"""
 </div>
 <div style='background: #333; border-radius: 12px; padding: 14px 24px; margin-bottom: 18px; display: flex; align-items: center;'>
     <img src='https://img.icons8.com/color/48/alarm.png' style='width:40px;height:40px;margin-right:18px;' alt='Deadline'/>
-    <span style='font-size:22px; color:#FFD700; font-weight:600;'>Gameweek {str(latest_gw[0]+1)} <b>Deadline</b>: <span style='color:#fff;'>{deadline}</span></span>
+    <span style='font-size:22px; color:#FFD700; font-weight:600;'>Gameweek {str(st.session_state['gw_id']+1)} <b>Deadline</b>: <span style='color:#fff;'>{st.session_state['deadline']}</span></span>
 </div>
 """, unsafe_allow_html=True)
 
