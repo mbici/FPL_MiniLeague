@@ -369,15 +369,15 @@ def render_overall_grid(df: pd.DataFrame, column_order: list | None = None, heig
 
     grid_css = f'''
     <style>
-    .overall-grid {{ display:block; width:100%; max-height: {height}px; overflow:auto; padding:10px; box-sizing:border-box; }}
+    .overall-grid {{ display:block; width:100%; max-height: 400px; overflow:auto; padding:10px; box-sizing:border-box; }}
     .overall-grid .header, .overall-grid .row {{
         display:grid;
         /* make Player the dominant column so long names fit:
            small fixed Rank, large Player (min 320px), compact Points */
-        grid-template-columns: 70px 540px 90px;
+        grid-template-columns: 70px 440px 90px;
         gap:12px;
         align-items:center;
-        padding:10px;
+        padding:2px;
         border-radius:10px;
         text-align:left;
         font-size:1.48rem;
