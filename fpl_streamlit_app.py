@@ -2,6 +2,8 @@ import streamlit as st
 from pathlib import Path
 import Utils.gameweek as gwk
 
+st.set_page_config(layout="wide")
+
 global deadline, later_gw, completed_months
 
 deadline = gwk.get_upcoming_deadline()
@@ -11,8 +13,6 @@ completed_months = gwk.get_till_latest_phase().keys() if gwk.get_till_latest_pha
 st.session_state['gw_id'] = latest_gw[0]
 st.session_state['gw_status'] = latest_gw[1]
 st.session_state['completed_months'] = completed_months
-
-st.set_page_config(layout="wide")
 
 # --- CUSTOM CSS INJECTION ---
 with open("assets/custom_sidebar.css") as f:
