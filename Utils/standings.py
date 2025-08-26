@@ -27,9 +27,9 @@ def winnings_data(gw_data, mn_data):
     Function to calculate the winnings across the mini league
     :return: DataFrame of winnings data
     """
-    
+
     #Calculatate the overall winnings
-    gw_data = gw_data[(gw_data.Gameweek < st.session_state['gw_id']) | (gw_data.Gameweek == st.session_state['gw_id'] & st.session_state['gw_status'])]
+    gw_data = gw_data[(gw_data.Gameweek < st.session_state['gw_id']) | ((gw_data.Gameweek == st.session_state['gw_id']) & (st.session_state['gw_status']))]
     mn_data = mn_data[mn_data.Month.isin(st.session_state['completed_months'])]
 
     gw_data_rankers = gw_data[gw_data['Rank'] == 1].groupby(['Gameweek', 'Rank']).size().reset_index(name='Count').sort_values('Gameweek')

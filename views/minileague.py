@@ -374,7 +374,7 @@ def render_overall_grid(df: pd.DataFrame, column_order: list | None = None, heig
         display:grid;
         /* make Player the dominant column so long names fit:
            small fixed Rank, large Player (min 320px), compact Points */
-        grid-template-columns: 70px 440px 90px;
+        grid-template-columns: 70px 400px 90px;
         gap:12px;
         align-items:center;
         padding:2px;
